@@ -11,8 +11,14 @@
     <groupId>com.kmhoon</groupId>
     <artifactId>auction</artifactId>
     <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
     <name>auction</name>
     <description>auction</description>
+    <modules>
+        <module>web</module>
+        <module>common</module>
+        <module>batch</module>
+    </modules>
     <properties>
         <java.version>17</java.version>
     </properties>
