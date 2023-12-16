@@ -1,5 +1,7 @@
 package com.kmhoon.config.security;
 
+import com.kmhoon.config.security.jwt.JwtAuthenticationDeniedHandler;
+import com.kmhoon.config.security.jwt.JwtAuthenticationEntryPoint;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -16,6 +18,9 @@ import org.springframework.security.web.SecurityFilterChain;
 @RequiredArgsConstructor
 public class SecurityConfig {
 
+    private final JwtAuthenticationEntryPoint entryPoint;
+    private final JwtAuthenticationDeniedHandler deniedHandler;
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return new BCryptPasswordEncoder();
@@ -25,6 +30,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http.csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(configurer -> configurer.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .exceptionHandling(configurer -> configurer.authenticationEntryPoint(entryPoint).accessDeniedHandler(deniedHandler))
                 .build();
     }
 }
