@@ -7,8 +7,14 @@ spring:
 
   jpa:
     hibernate:
-      ddl-auto: update
+      ddl-auto: none
     properties:
       hibernate:
         format_sql: true #To beautify or pretty print the SQL
         show_sql: true #show sql
+
+jwt:
+  secret: a21ob29uLW15LXBldC1kaWFyeS1hcHBsaWNhdGlvbi1kaWFyeS1wZXQtbXkta21ob29u
+  time:
+    access: 3600000
+    refresh: 86400000
