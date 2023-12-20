@@ -1,8 +1,8 @@
-package com.kmhoon.config.security.login;
+package com.kmhoon.web.security.login;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.kmhoon.config.security.jwt.JwtTokenProvider;
-import com.kmhoon.config.security.jwt.TokenInfo;
+import com.kmhoon.web.security.jwt.JwtTokenProvider;
+import com.kmhoon.web.security.jwt.TokenInfo;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;

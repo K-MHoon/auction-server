@@ -1,4 +1,4 @@
-package com.kmhoon.config.security.jwt;
+package com.kmhoon.web.security.jwt;
 
 import lombok.Getter;
 import org.springframework.beans.factory.annotation.Value;

@@ -1,4 +1,4 @@
-package com.kmhoon.config.db;
+package com.kmhoon.web.config.db;
 
 import org.springframework.boot.autoconfigure.domain.EntityScan;
 import org.springframework.context.annotation.Configuration;

@@ -1,4 +1,4 @@
-package com.kmhoon.config.security.jwt;
+package com.kmhoon.web.security.jwt;
 
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;

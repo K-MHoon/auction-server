@@ -1,4 +1,4 @@
-package com.kmhoon.config.security.login;
+package com.kmhoon.web.security.login;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
