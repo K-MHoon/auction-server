@@ -1,0 +1,7 @@
+user:
+  email:
+    not-blank: 사용자 이메일은 빈 값일 수 없습니다.
+  password:
+    not-blank: 사용자 비밀번호는 빈 값일 수 없습니다.
+  name:
+    not-blank: 사용자 이름은 빈 값일 수 없습니다.
