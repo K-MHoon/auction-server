@@ -21,18 +21,26 @@ public class User extends BaseTimeEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long sequence;
 
+    @Column(nullable = false, updatable = false)
     private String email;
 
+    @Column(nullable = false)
     private String password;
 
+    @Column(nullable = false)
     private String name;
 
     @Convert(converter = NumericBooleanConverter.class)
-    private Boolean isUse;
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isUse = Boolean.TRUE;
 
-    private Long passwordWrongCount;
+    @Builder.Default
+    private Long passwordWrongCount = 0L;
 
-    private Boolean isLock;
+    @Column(nullable = false)
+    @Builder.Default
+    private Boolean isLock = Boolean.FALSE;
 
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Builder.Default
