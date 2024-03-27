@@ -1,5 +1,6 @@
 package com.kmhoon.common.model.entity.auth.map;
 
+import com.kmhoon.common.model.entity.BaseEntity;
 import com.kmhoon.common.model.entity.BaseTimeEntity;
 import com.kmhoon.common.model.entity.auth.role.Role;
 import com.kmhoon.common.model.entity.auth.user.User;
@@ -12,7 +13,7 @@ import lombok.*;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class UserRole extends BaseTimeEntity {
+public class UserRole extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

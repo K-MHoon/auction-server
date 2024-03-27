@@ -1,7 +1,9 @@
 package com.kmhoon.common.model.entity.auth.user;
 
+import com.kmhoon.common.model.entity.BaseEntity;
 import com.kmhoon.common.model.entity.BaseTimeEntity;
 import com.kmhoon.common.model.entity.auth.map.UserRole;
+import com.kmhoon.common.model.entity.service.inventory.Inventory;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.type.NumericBooleanConverter;
@@ -15,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class User extends BaseTimeEntity {
+public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -45,4 +47,8 @@ public class User extends BaseTimeEntity {
     @OneToMany(mappedBy = "user", fetch = FetchType.LAZY)
     @Builder.Default
     private List<UserRole> userRoleList = new ArrayList<>();
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "inventory_seq", updatable = false, nullable = false)
+    private Inventory inventory;
 }
