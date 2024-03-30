@@ -43,9 +43,9 @@ public class Item extends BaseEntity {
     /**
      * 경매 이력을 확인 할 수 있다.
      */
-    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
-    @Builder.Default
-    private List<Auction> auctionList = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "auction_seq")
+    private Auction auction;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inventory_seq")

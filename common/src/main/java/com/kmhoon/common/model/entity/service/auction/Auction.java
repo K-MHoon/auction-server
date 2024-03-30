@@ -2,7 +2,6 @@ package com.kmhoon.common.model.entity.service.auction;
 
 import com.kmhoon.common.enums.AuctionStatus;
 import com.kmhoon.common.model.entity.BaseEntity;
-import com.kmhoon.common.model.entity.BaseTimeEntity;
 import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.item.Item;
 import jakarta.persistence.*;
@@ -10,6 +9,8 @@ import lombok.*;
 import org.hibernate.type.NumericBooleanConverter;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "tb_service_auction")
@@ -43,9 +44,9 @@ public class Auction extends BaseEntity {
 
     private LocalDateTime soldTime;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "item_seq", updatable = false, nullable = false)
-    private Item item;
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "auction")
+    @Builder.Default
+    private List<Item> itemList = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_seq", updatable = false, nullable = false)
@@ -53,5 +54,5 @@ public class Auction extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyer_seq", updatable = false, nullable = false)
-    private User user;
+    private User buyer;
 }
