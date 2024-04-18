@@ -49,6 +49,6 @@ public class User extends BaseEntity {
     private List<UserRole> userRoleList = new ArrayList<>();
 
     @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inventory_seq", updatable = false, nullable = false)
+    @JoinColumn(name = "inventory_seq")
     private Inventory inventory;
 }
