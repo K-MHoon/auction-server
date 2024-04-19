@@ -3,6 +3,7 @@ package com.kmhoon.common.model.entity.service.inventory;
 import com.kmhoon.common.enums.CouponStatus;
 import com.kmhoon.common.enums.CouponType;
 import com.kmhoon.common.model.entity.BaseEntity;
+import com.kmhoon.common.model.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -14,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class Coupon extends BaseEntity {
+public class Coupon extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,9 +26,11 @@ public class Coupon extends BaseEntity {
     private Inventory inventory;
 
     // 쿠폰 종류
+    @Enumerated(EnumType.STRING)
     private CouponType type;
 
     // 쿠폰 현재 상태
+    @Enumerated(EnumType.STRING)
     private CouponStatus status;
 
     // 사용된/만료된 날짜

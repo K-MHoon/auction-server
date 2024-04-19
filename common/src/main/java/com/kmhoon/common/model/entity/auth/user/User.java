@@ -17,7 +17,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class User extends BaseEntity {
+public class User extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -48,7 +48,6 @@ public class User extends BaseEntity {
     @Builder.Default
     private List<UserRole> userRoleList = new ArrayList<>();
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "inventory_seq")
+    @OneToOne(mappedBy = "owner", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private Inventory inventory;
 }

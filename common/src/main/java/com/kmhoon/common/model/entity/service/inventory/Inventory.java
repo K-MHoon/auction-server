@@ -16,7 +16,7 @@ import java.util.List;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 @Getter
-public class Inventory extends BaseEntity {
+public class Inventory extends BaseTimeEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -26,7 +26,8 @@ public class Inventory extends BaseEntity {
     @Builder.Default
     private List<Item> itemList = new ArrayList<>();
 
-    @OneToOne(mappedBy = "inventory")
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "owner_seq")
     private User owner;
 
     // 경매 가능한 쿠폰 수
