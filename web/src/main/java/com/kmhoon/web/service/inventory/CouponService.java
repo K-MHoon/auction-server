@@ -28,7 +28,8 @@ public class CouponService {
     @Transactional
     public void buy(CouponServiceRequestDto.Buy dto) {
         String loggedInUserId = SecurityUtils.getLoggedInUserId();
-        User user = userRepository.findByEmailWithInventory(loggedInUserId).orElseThrow();
+        User user = userRepository.findByEmailWithInventory(loggedInUserId).orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
+        user.getInventory().minusMoney(dto.getPrice());
 
         List<Coupon> couponList = LongStream.rangeClosed(0, dto.getCount()).mapToObj(c -> Coupon.builder()
                         .status(CouponStatus.UNUSED)

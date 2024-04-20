@@ -36,4 +36,18 @@ public class Inventory extends BaseTimeEntity {
     private List<Coupon> couponList = new ArrayList<>();
 
     private Long money;
+
+    public void updateMoney(long money) {
+        if(this.money > 0) {
+            throw new IllegalArgumentException("잔액은 0보다 작을 수 없습니다.");
+        }
+        this.money = money;
+    }
+
+    public void minusMoney(long money) {
+        if(this.money < money) {
+            throw new IllegalArgumentException("잔액이 부족합니다.");
+        }
+        this.money -= money;
+    }
 }

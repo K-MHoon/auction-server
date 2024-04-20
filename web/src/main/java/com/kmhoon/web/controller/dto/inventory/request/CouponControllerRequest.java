@@ -15,9 +15,13 @@ public final class CouponControllerRequest {
         @NotNull
         private Long count;
 
+        @NotNull
+        private Long price;
+
         public CouponServiceRequestDto.Buy toServiceRequest() {
             return CouponServiceRequestDto.Buy.builder()
                     .count(this.count)
+                    .price(this.price)
                     .build();
         }
     }

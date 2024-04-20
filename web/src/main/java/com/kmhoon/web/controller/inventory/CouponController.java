@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.security.Principal;
+
 @RestController
 @RequiredArgsConstructor
 @Slf4j
@@ -19,8 +21,9 @@ public class CouponController {
     private final CouponService couponService;
 
     @ResponseStatus(HttpStatus.OK)
-    @PostMapping("/api/user/service/coupon")
-    public void buy(@RequestBody @Valid CouponControllerRequest.Buy request) {
+    @PostMapping("/api/service/coupon")
+    public void buy(@RequestBody @Valid CouponControllerRequest.Buy request, Principal principal) {
         couponService.buy(request.toServiceRequest());
     }
+
 }

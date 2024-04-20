@@ -13,5 +13,6 @@ public final class CouponServiceRequestDto {
     public static class Buy {
 
         private Long count;
+        private Long price;
     }
 }
