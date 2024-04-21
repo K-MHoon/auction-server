@@ -1,10 +1,10 @@
 package com.kmhoon.web.security.jwt;
 
+import com.kmhoon.web.security.login.UserDto;
 import io.jsonwebtoken.*;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.stereotype.Component;
@@ -24,18 +24,16 @@ public class JwtTokenProvider {
 
     public TokenInfo generate(Authentication authentication) {
 
-        String authorities = authentication.getAuthorities()
-                .stream()
-                .map(GrantedAuthority::getAuthority)
-                .collect(Collectors.joining(","));
-
         long now = (new Date()).getTime();
 
         Date accessTokenExpiresIn = new Date(now + jwtTime.getAccessTokenTime());
 
+        UserDto userDto = (UserDto)authentication.getPrincipal();
+
         String accessToken = Jwts.builder()
-                .setSubject(authentication.getName())
-                .claim("auth", authorities)
+                .claim("email", userDto.getEmail())
+                .claim("name", userDto.getName())
+                .claim("auth", userDto.getRoleNames())
                 .setExpiration(accessTokenExpiresIn)
                 .signWith(jwtKey.getKey(), SignatureAlgorithm.HS256)
                 .compact();
@@ -43,13 +41,15 @@ public class JwtTokenProvider {
         Date refreshExpiresIn = new Date(now + jwtTime.getRefreshTokenTime());
 
         String refreshToken = Jwts.builder()
-                .setSubject(authentication.getName())
+                .claim("email", userDto.getEmail())
                 .setExpiration(refreshExpiresIn)
                 .signWith(jwtKey.getKey(), SignatureAlgorithm.HS256)
                 .compact();
 
         return TokenInfo.builder()
                 .grantType("Bearer")
+                .email(userDto.getEmail())
+                .name(userDto.getName())
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
                 .build();
@@ -65,24 +65,26 @@ public class JwtTokenProvider {
                 .map(SimpleGrantedAuthority::new)
                 .collect(Collectors.toList());
 
-        User user = new User(claims.getSubject(), "", authorities);
+        UserDto user = new UserDto(claims.get("email").toString(), claims.get("name").toString(), "", authorities);
         return new JwtAuthentication(user, "", authorities);
     }
 
-    public boolean validate(String token) {
+    public Claims validate(String token) {
         try {
-            Jwts.parserBuilder().setSigningKey(jwtKey.getKey()).build().parseClaimsJws(token);
-            return true;
+            return Jwts.parserBuilder().setSigningKey(jwtKey.getKey()).build().parseClaimsJws(token).getBody();
         }catch (io.jsonwebtoken.security.SecurityException | MalformedJwtException e) {
             log.info("잘못된 JWT 서명입니다.", e);
+            throw e;
         } catch (ExpiredJwtException e) {
             log.info("만료된 JWT 토큰입니다.", e);
+            throw e;
         } catch (UnsupportedJwtException e) {
             log.info("지원되지 않는 JWT 토큰입니다.", e);
+            throw e;
         } catch (IllegalArgumentException e) {
             log.info("JWT 토큰이 잘못되었습니다.", e);
+            throw e;
         }
-        return false;
     }
 
     private Claims parseClaims(String accessToken) {
