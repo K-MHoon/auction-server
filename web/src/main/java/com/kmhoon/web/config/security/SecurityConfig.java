@@ -54,9 +54,10 @@ public class SecurityConfig {
                     config.failureHandler(loginFailureHandler);
                 })
                 .authorizeHttpRequests(configurer -> configurer
+                        .requestMatchers("/api/user/**", "/api/view/**").permitAll()
                         .requestMatchers("/api/service/**").hasRole("USER")
                         .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                        .anyRequest().permitAll())
+                        .anyRequest().authenticated())
                 .build();
     }
 
