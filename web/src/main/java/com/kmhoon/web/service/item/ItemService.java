@@ -3,6 +3,7 @@ package com.kmhoon.web.service.item;
 import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.item.Item;
 import com.kmhoon.common.repository.service.item.ItemRepository;
+import com.kmhoon.web.controller.dto.item.request.ItemControllerRequest;
 import com.kmhoon.web.exception.AuctionApiException;
 import com.kmhoon.web.service.dto.item.ItemServiceRequestDto;
 import com.kmhoon.web.service.user.UserCommonService;
@@ -16,7 +17,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
+import static com.kmhoon.web.exception.code.service.item.ItemErrorCode.HAS_NOT_SEQ_REQUEST;
 import static com.kmhoon.web.exception.code.service.item.ItemErrorCode.OVER_ITEM_LIMIT;
 
 @Service
@@ -59,5 +62,19 @@ public class ItemService {
 
     public ResponseEntity<Resource> view(String fileName) {
         return fileUtil.getFile(fileName);
+    }
+
+    @Transactional
+    public void delete(ItemControllerRequest.Delete request) {
+        User loggedInUser = userCommonService.getLoggedInUser();
+        List<Item> itemList = itemRepository.findAllByInventoryAndIsUseIsTrue(loggedInUser.getInventory());
+
+        List<Item> deleteTargetItemList = itemList.stream().filter(item -> request.getSeqList().contains(item.getSequence())).collect(Collectors.toList());
+
+        if(deleteTargetItemList.size() != request.getSeqList().size()) {
+            throw new AuctionApiException(HAS_NOT_SEQ_REQUEST);
+        }
+
+        deleteTargetItemList.forEach(Item::delete);
     }
 }

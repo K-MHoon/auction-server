@@ -5,6 +5,7 @@ import com.kmhoon.web.service.dto.item.ItemServiceRequestDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
+import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
@@ -47,5 +48,19 @@ public final class ItemControllerRequest {
                     .documents(this.documents)
                     .build();
         }
+    }
+
+
+    @Getter
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Builder
+    @ToString
+    public final static class Delete {
+
+        @UniqueElements
+        @NotNull
+        @Builder.Default
+        private List<Long> seqList = new ArrayList<>();
     }
 }
