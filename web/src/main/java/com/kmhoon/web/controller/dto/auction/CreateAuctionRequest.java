@@ -27,9 +27,8 @@ public class CreateAuctionRequest {
     @NotBlank
     private String description;
 
-    @UniqueElements
     @NotNull
-    private List<Long> itemSeqList;
+    private Long itemSeq;
 
     public AuctionServiceRequestDto.CreateAuctionServiceRequest toServiceRequest() {
         return AuctionServiceRequestDto.CreateAuctionServiceRequest.builder()
@@ -37,7 +36,7 @@ public class CreateAuctionRequest {
                 .minPrice(this.minPrice)
                 .price(this.price)
                 .description(this.description)
-                .itemSeqList(this.itemSeqList)
+                .itemSeq(this.itemSeq)
                 .build();
     }
 }

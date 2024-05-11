@@ -18,6 +18,6 @@ public class AuctionServiceRequestDto {
         private Long minPrice;
         private Long price;
         private String description;
-        private List<Long> itemSeqList;
+        private Long itemSeq;
     }
 }
