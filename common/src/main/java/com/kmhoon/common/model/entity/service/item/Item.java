@@ -38,16 +38,42 @@ public class Item extends BaseEntity {
     @Convert(converter = NumericBooleanConverter.class)
     private Boolean isUse;
 
-    // 이미지
+    @ElementCollection
+    @Builder.Default
+    private List<ItemImage> imageList = new ArrayList<>();
+
+    @ElementCollection
+    @Builder.Default
+    private List<ItemDocument> documentList = new ArrayList<>();
 
     /**
-     * 경매 이력을 확인 할 수 있다.
+     * 해당 아이템이 진행한 경매 이력을 확인 할 수 있다.
      */
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "auction_seq")
-    private Auction auction;
+    @OneToMany(mappedBy = "item", fetch = FetchType.LAZY)
+    @Builder.Default
+    private List<Auction> auctionList = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "inventory_seq")
     private Inventory inventory;
+
+    public void addImage(String fileName) {
+        ItemImage itemImage = ItemImage.builder()
+                .fileName(fileName)
+                .ord(this.imageList.size())
+                .build();
+        this.imageList.add(itemImage);
+    }
+
+    public void addDocument(String fileName) {
+        ItemDocument document = ItemDocument.builder()
+                .fileName(fileName)
+                .ord(this.documentList.size())
+                .build();
+        this.documentList.add(document);
+    }
+
+    public void delete() {
+        this.isUse = Boolean.FALSE;
+    }
 }

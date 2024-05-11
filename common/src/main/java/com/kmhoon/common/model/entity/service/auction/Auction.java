@@ -44,9 +44,9 @@ public class Auction extends BaseEntity {
 
     private LocalDateTime soldTime;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "auction")
-    @Builder.Default
-    private List<Item> itemList = new ArrayList<>();
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "item_seq")
+    private Item item;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_seq", updatable = false, nullable = false)
