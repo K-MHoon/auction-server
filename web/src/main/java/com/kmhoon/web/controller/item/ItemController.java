@@ -1,5 +1,6 @@
 package com.kmhoon.web.controller.item;
 
+import com.kmhoon.common.model.dto.service.item.ItemDto;
 import com.kmhoon.web.controller.dto.item.request.ItemControllerRequest;
 import com.kmhoon.web.service.item.ItemService;
 import jakarta.validation.Valid;
@@ -26,6 +27,13 @@ public class ItemController {
     public void add(@Valid ItemControllerRequest.Add request) {
         log.info("add : " + request);
         itemService.add(request.toServiceRequest());
+    }
+
+    @GetMapping("/api/service/item/{itemId}")
+    @ResponseStatus(HttpStatus.OK)
+    public ItemDto get(@PathVariable(value = "itemId") Long itemId) {
+        log.info("get : " + itemId);
+        return itemService.get(itemId);
     }
 
     @DeleteMapping("/api/service/item")

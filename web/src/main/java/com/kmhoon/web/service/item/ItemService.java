@@ -1,7 +1,9 @@
 package com.kmhoon.web.service.item;
 
+import com.kmhoon.common.model.dto.service.item.ItemDto;
 import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.item.Item;
+import com.kmhoon.common.repository.service.auction.AuctionRepository;
 import com.kmhoon.common.repository.service.item.ItemRepository;
 import com.kmhoon.web.controller.dto.item.request.ItemControllerRequest;
 import com.kmhoon.web.exception.AuctionApiException;
@@ -30,6 +32,7 @@ public class ItemService {
     private final CustomFileUtil fileUtil;
     private final ItemRepository itemRepository;
     private final UserCommonService userCommonService;
+    private final AuctionRepository auctionRepository;
 
     @Transactional
     public void add(ItemServiceRequestDto.Add request) {
@@ -76,5 +79,13 @@ public class ItemService {
         }
 
         deleteTargetItemList.forEach(Item::delete);
+    }
+
+    @Transactional(readOnly = true)
+    public ItemDto get(Long itemId) {
+        User loggedInUser = userCommonService.getLoggedInUser();
+        Item item = itemRepository.findByInventoryAndSequenceAndIsUseIsTrue(loggedInUser.getInventory(), itemId)
+                .orElseThrow(() -> new AuctionApiException(HAS_NOT_SEQ_REQUEST));
+        return ItemDto.ofDetail(item);
     }
 }
