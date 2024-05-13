@@ -6,23 +6,15 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.data.domain.AuditorAware;
 import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-
-import java.util.Optional;
 
 @Configuration
-@EnableJpaAuditing
+@EnableJpaAuditing(auditorAwareRef = "auditorAware")
 @EnableJpaRepositories(basePackages = "com.kmhoon.common.repository")
 @EntityScan(basePackages = "com.kmhoon.common.model.entity")
 public class JpaConfig {
 
     @Bean
     public AuditorAware<String> auditorAware() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        if(authentication == null) {
-            return Optional::empty;
-        }
-        return () -> Optional.of(authentication.getName());
+        return new UserAuditorAware();
     }
 }
