@@ -1,5 +1,7 @@
 package com.kmhoon.web.security.jwt;
 
+import com.kmhoon.web.exception.AuctionApiException;
+import com.kmhoon.web.exception.code.security.SecurityErrorCode;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,7 +35,7 @@ public class JwtFilter extends OncePerRequestFilter {
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception ex) {
-            this.resolver.resolveException(request, response, null, ex);
+            this.resolver.resolveException(request, response, null, new AuctionApiException(ex, SecurityErrorCode.VALIDATION_TOKEN));
             return;
         }
         filterChain.doFilter(request, response);
@@ -42,17 +44,30 @@ public class JwtFilter extends OncePerRequestFilter {
     private String getToken(HttpServletRequest request, HttpServletResponse response) {
         String bearerToken = request.getHeader(HttpHeaders.AUTHORIZATION);
 
-        if(!StringUtils.hasText(bearerToken) || !bearerToken.startsWith("Bearer ")) {
+        if (!StringUtils.hasText(bearerToken) || !bearerToken.startsWith("Bearer ")) {
             throw new IllegalArgumentException("Bearer 헤더가 존재하지 않습니다.");
         }
-
         String token = bearerToken.substring(7);
-
-        if(!jwtTokenProvider.validate(token)) {
-            throw new IllegalArgumentException("토큰 검증에 실패했습니다.");
-        }
-
+        jwtTokenProvider.validate(token);
         return token;
     }
 
+    @Override
+    protected boolean shouldNotFilter(HttpServletRequest request) throws ServletException {
+        if(request.getMethod().equals("OPTIONS")) {
+            return true;
+        }
+
+        String path = request.getRequestURI();
+
+        if(path.startsWith("/api/user/")) {
+            return true;
+        }
+
+        if(path.startsWith("/api/view/")) {
+            return true;
+        }
+
+        return false;
+    }
 }
