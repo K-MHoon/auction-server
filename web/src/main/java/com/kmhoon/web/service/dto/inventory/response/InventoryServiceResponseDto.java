@@ -31,7 +31,7 @@ public final class InventoryServiceResponseDto {
                             .map(CouponDto::of)
                             .collect(Collectors.toList()))
                     .itemList(itemList.stream()
-                            .map(ItemDto::of)
+                            .map(ItemDto::ofSimple)
                             .collect(Collectors.toList()))
                     .build();
         }
