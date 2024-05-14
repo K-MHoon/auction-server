@@ -4,9 +4,13 @@ import com.kmhoon.common.enums.CouponStatus;
 import com.kmhoon.common.enums.CouponType;
 import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.inventory.Coupon;
+import com.kmhoon.common.model.entity.service.inventory.Inventory;
 import com.kmhoon.common.repository.auth.user.UserRepository;
 import com.kmhoon.common.repository.service.inventory.CouponRepository;
+import com.kmhoon.web.exception.AuctionApiException;
+import com.kmhoon.web.exception.code.service.item.ItemErrorCode;
 import com.kmhoon.web.service.dto.inventory.request.CouponServiceRequestDto;
+import com.kmhoon.web.service.user.UserCommonService;
 import com.kmhoon.web.utils.SecurityUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -23,22 +27,30 @@ import java.util.stream.LongStream;
 public class CouponService {
 
     private final CouponRepository couponRepository;
-    private final UserRepository userRepository;
+    private final UserCommonService userCommonService;
 
     @Transactional
-    public void buy(CouponServiceRequestDto.Buy dto) {
-        String loggedInUserId = SecurityUtils.getLoggedInUserId();
-        User user = userRepository.findByEmailWithInventory(loggedInUserId).orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
-        user.getInventory().minusMoney(dto.getPrice());
+    public Long buy(CouponServiceRequestDto.Buy dto) {
+        User loggedInUser = userCommonService.getLoggedInUser();
+
+        Inventory inventory = loggedInUser.getInventory();
+        try {
+            inventory.minusMoney(dto.getPrice());
+        } catch (IllegalArgumentException ex) {
+            throw new AuctionApiException(ex, ex.getMessage());
+        }
 
         List<Coupon> couponList = LongStream.rangeClosed(0, dto.getCount()).mapToObj(c -> Coupon.builder()
                         .status(CouponStatus.UNUSED)
                         .type(CouponType.AUCTION)
-                        .inventory(user.getInventory())
+                        .inventory(inventory)
+                        .isUse(Boolean.TRUE)
                         .endDate(null)
                         .build())
                 .collect(Collectors.toList());
 
         couponRepository.saveAll(couponList);
+
+        return inventory.getMoney();
     }
 }
