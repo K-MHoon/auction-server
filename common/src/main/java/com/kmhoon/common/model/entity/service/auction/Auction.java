@@ -1,11 +1,13 @@
 package com.kmhoon.common.model.entity.service.auction;
 
 import com.kmhoon.common.enums.AuctionStatus;
+import com.kmhoon.common.enums.AuctionType;
 import com.kmhoon.common.model.entity.BaseEntity;
 import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.item.Item;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Comment;
 import org.hibernate.type.NumericBooleanConverter;
 
 import java.time.LocalDateTime;
@@ -37,11 +39,22 @@ public class Auction extends BaseEntity {
     // 판매 글
     private String description;
 
+    @Enumerated(value = EnumType.STRING)
+    private AuctionType auctionType;
+
+    @Enumerated(value = EnumType.STRING)
     private AuctionStatus status;
 
     @Convert(converter = NumericBooleanConverter.class)
     private Boolean isUse;
 
+    @Comment("경매시작시간")
+    private LocalDateTime startTime;
+
+    @Comment("경매종료시간")
+    private LocalDateTime endTime;
+
+    @Comment("판매완료시간")
     private LocalDateTime soldTime;
 
     @ManyToOne(fetch = FetchType.LAZY)
