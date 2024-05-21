@@ -55,4 +55,10 @@ public class ItemController {
         log.info("get History : " + itemId);
         return itemService.getHistory(itemId, pageable);
     }
+
+    @GetMapping("/api/service/item/{itemId}/history/auction/{auctionId}")
+    @ResponseStatus(HttpStatus.OK)
+    public AuctionDto getAuctionHistory(@PathVariable(value = "itemId") Long itemId, @PathVariable(value = "auctionId") Long auctionId) {
+        return itemService.getHistoryDetail(itemId, auctionId);
+    }
 }

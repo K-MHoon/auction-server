@@ -97,9 +97,9 @@ public class ItemService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponseDto<AuctionDto> getHistory(Long itemId, Pageable pageable) {
+    public PageResponseDto<AuctionDto> getHistory(Long sequence, Pageable pageable) {
         User loggedInUser = userCommonService.getLoggedInUser();
-        Item item = itemRepository.findByInventoryAndSequenceAndIsUseIsTrue(loggedInUser.getInventory(), itemId)
+        Item item = itemRepository.findByInventoryAndSequenceAndIsUseIsTrue(loggedInUser.getInventory(), sequence)
                 .orElseThrow(() -> new AuctionApiException(HAS_NOT_SEQ_REQUEST));
         Page<Auction> result = auctionRepository.findAllByItemAndStatusAndIsUseOrderByCreatedAtDesc(item, AuctionStatus.FINISHED, Boolean.TRUE, pageable);
         List<AuctionDto> historyList = result.getContent().stream().map(AuctionDto::forHistory).collect(Collectors.toList());
@@ -109,6 +109,12 @@ public class ItemService {
                 .pageable(pageable)
                 .totalCount(result.getTotalElements())
                 .build();
+    }
 
+    @Transactional(readOnly = true)
+    public AuctionDto getHistoryDetail(Long itemSequence, Long auctionSequence) {
+        User loggedInUser = userCommonService.getLoggedInUser();
+        Auction auction = auctionRepository.findBySequenceAndItem_SequenceAndItem_InventoryAndIsUseIsTrueAndStatus(auctionSequence, itemSequence, loggedInUser.getInventory(), AuctionStatus.FINISHED).orElseThrow(() -> new AuctionApiException(HAS_NOT_SEQ_REQUEST));
+        return AuctionDto.of(auction);
     }
 }
