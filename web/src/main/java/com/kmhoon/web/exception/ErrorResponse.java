@@ -1,24 +1,40 @@
 package com.kmhoon.web.exception;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.RequiredArgsConstructor;
+import com.kmhoon.web.exception.code.ErrorCode;
+import lombok.*;
 import org.springframework.validation.FieldError;
 
 import java.util.List;
 
 @Getter
-@Builder
-@RequiredArgsConstructor
-public record ErrorResponse(String code,
-                            String message,
-                            @JsonInclude(JsonInclude.Include.NON_EMPTY) List<ValidationError> errors) {
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
+@ToString
+public final class ErrorResponse{
+
+    private String code;
+    private String message;
+
+    @JsonInclude(JsonInclude.Include.NON_EMPTY)
+    private List<ValidationError> errors;
+
+    public static ErrorResponse of(ErrorCode ex) {
+        return new ErrorResponse(ex.getCode(), ex.getMessage(), null);
+    }
+
+    public static ErrorResponse of(ErrorCode ex, List<ValidationError> errors) {
+        return new ErrorResponse(ex.getCode(), ex.getMessage(), errors);
+    }
 
     @Getter
+    @ToString
     @Builder
-    @RequiredArgsConstructor
-    public record ValidationError(String field, String message) {
+    public static class ValidationError {
+
+        private String field;
+        private String message;
+
         public static ValidationError of(final FieldError fieldError) {
             return ValidationError.builder()
                     .field(fieldError.getField())
