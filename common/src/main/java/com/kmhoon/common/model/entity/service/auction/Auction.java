@@ -5,6 +5,7 @@ import com.kmhoon.common.enums.AuctionType;
 import com.kmhoon.common.model.entity.BaseEntity;
 import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.item.Item;
+import com.kmhoon.common.model.entity.service.item.ItemImage;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Comment;
@@ -62,10 +63,22 @@ public class Auction extends BaseEntity {
     private Item item;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "seller_seq", updatable = false, nullable = false)
+    @JoinColumn(name = "seller_seq")
     private User seller;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "buyer_seq", updatable = false, nullable = false)
+    @JoinColumn(name = "buyer_seq")
     private User buyer;
+
+    @ElementCollection
+    @Builder.Default
+    private List<AuctionImage> auctionImageList = new ArrayList<>();
+
+    public void addImage(String fileName) {
+        AuctionImage auctionImage = AuctionImage.builder()
+                .fileName(fileName)
+                .ord(this.auctionImageList.size())
+                .build();
+        this.auctionImageList.add(auctionImage);
+    }
 }
