@@ -1,6 +1,7 @@
 package com.kmhoon.web.controller.dto.auction;
 
 import com.kmhoon.common.enums.AuctionType;
+import com.kmhoon.common.utils.DateTimeUtil;
 import com.kmhoon.web.service.dto.auction.request.AuctionServiceRequestDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
@@ -8,6 +9,8 @@ import lombok.*;
 import org.hibernate.validator.constraints.UniqueElements;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
@@ -34,13 +37,14 @@ public class CreateAuctionRequest {
     private Long itemSeq;
 
     @NotBlank
-    private String startTime;
+    private LocalDateTime startTime;
 
     @NotBlank
-    private String endTime;
+    private LocalDateTime endTime;
 
     @NotNull
-    private MultipartFile image;
+    @Builder.Default
+    private List<MultipartFile> images = new ArrayList<>();
 
     public AuctionServiceRequestDto.CreateAuctionServiceRequest toServiceRequest() {
         return AuctionServiceRequestDto.CreateAuctionServiceRequest.builder()
@@ -48,8 +52,10 @@ public class CreateAuctionRequest {
                 .minPrice(this.minPrice)
                 .description(this.description)
                 .itemSeq(this.itemSeq)
+                .startTime(this.startTime)
+                .endTime(this.endTime)
                 .type(this.type)
-                .image(this.image)
+                .images(this.images)
                 .build();
     }
 }

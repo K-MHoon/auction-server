@@ -5,6 +5,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,9 +23,10 @@ public class AuctionServiceRequestDto {
         private Long minPrice;
         private AuctionType type;
         private String description;
-        private String startTime;
-        private String endTime;
+        private LocalDateTime startTime;
+        private LocalDateTime endTime;
         private Long itemSeq;
-        private MultipartFile image;
+        @Builder.Default
+        private List<MultipartFile> images = new ArrayList<>();
     }
 }
