@@ -1,5 +1,6 @@
 package com.kmhoon.web.service.inventory;
 
+import com.kmhoon.common.enums.CouponStatus;
 import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.inventory.Coupon;
 import com.kmhoon.common.model.entity.service.inventory.Inventory;
@@ -33,7 +34,7 @@ public class InventoryService {
         User loggedInUser = userCommonService.getLoggedInUser();
         Inventory inventory = loggedInUser.getInventory();
         List<Item> itemList = itemRepository.findAllByInventoryAndIsUseIsTrue(inventory);
-        List<Coupon> couponList = couponRepository.findAllByInventoryAndIsUseIsTrue(inventory);
+        List<Coupon> couponList = couponRepository.findAllByInventoryAndIsUseIsTrueAndStatus(inventory, CouponStatus.UNUSED);
 
         return GetInventory.of(inventory.getMoney(), couponList, itemList);
     }

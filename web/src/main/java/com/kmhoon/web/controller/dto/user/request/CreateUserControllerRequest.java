@@ -1,4 +1,4 @@
-package com.kmhoon.web.dto.user.request;
+package com.kmhoon.web.controller.dto.user.request;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.*;
