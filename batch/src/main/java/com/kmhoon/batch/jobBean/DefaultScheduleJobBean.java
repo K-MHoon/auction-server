@@ -11,6 +11,9 @@ import org.springframework.batch.core.configuration.JobLocator;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.scheduling.quartz.QuartzJobBean;
 
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
 @Getter
 @Setter
 public class DefaultScheduleJobBean extends QuartzJobBean {
@@ -25,6 +28,7 @@ public class DefaultScheduleJobBean extends QuartzJobBean {
             Job job = this.jobLocator.getJob(this.jobName);
             JobParameters jobParameters = new JobParametersBuilder()
                     .addString("id", String.valueOf(System.currentTimeMillis()))
+                    .addString("date", LocalDateTime.now().format(DateTimeFormatter.ISO_DATE_TIME))
                     .toJobParameters();
             this.jobLauncher.run(job, jobParameters);
         } catch (Exception e) {

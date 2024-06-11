@@ -7,13 +7,10 @@ spring:
     username: root
     password:
   jpa:
-    hibernate:
-      ddl-auto: update
     properties:
       hibernate:
         format_sql: true #To beautify or pretty print the SQL
         show_sql: true #show sql
-  quartz:
-    job-store-type: jdbc
-    jdbc:
-      initialize-schema: always
+  batch:
+    job:
+      enabled: false
