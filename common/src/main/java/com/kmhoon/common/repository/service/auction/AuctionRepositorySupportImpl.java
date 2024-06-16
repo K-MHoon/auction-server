@@ -4,10 +4,11 @@ import com.kmhoon.common.enums.AuctionStatus;
 import com.kmhoon.common.enums.ItemType;
 import com.kmhoon.common.model.entity.service.auction.Auction;
 import com.querydsl.core.types.dsl.BooleanExpression;
+import com.querydsl.jpa.JPQLQuery;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
+import org.springframework.data.support.PageableExecutionUtils;
 import org.springframework.util.StringUtils;
 
 import java.util.List;
@@ -34,7 +35,15 @@ public class AuctionRepositorySupportImpl extends QuerydslRepositorySupport impl
                 .orderBy(auction.startTime.desc())
                 .fetch();
 
-        return new PageImpl<>(result, pageable, result.size());
+        JPQLQuery<Long> countQuery = from(auction)
+                .select(auction.count())
+                .leftJoin(auction.item, item)
+                .where(auction.isUse.isTrue(),
+                        auction.status.eq(AuctionStatus.RUNNING),
+                        containsTitle(title),
+                        eqItemType(itemType));
+
+        return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
     }
 
     private BooleanExpression eqItemType(ItemType itemType) {
