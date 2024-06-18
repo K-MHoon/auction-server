@@ -3,6 +3,7 @@ package com.kmhoon.common.repository.service.auction;
 import com.kmhoon.common.enums.AuctionStatus;
 import com.kmhoon.common.enums.ItemType;
 import com.kmhoon.common.model.entity.service.auction.Auction;
+import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQuery;
 import org.springframework.data.domain.Page;
@@ -23,12 +24,12 @@ public class AuctionRepositorySupportImpl extends QuerydslRepositorySupport impl
     }
 
     @Override
-    public Page<Auction> findAllByItemTypeAndTitleAndPageable(ItemType itemType, String title, Pageable pageable) {
+    public Page<Auction> findAllByItemTypeAndItemNameAndPageable(ItemType itemType, String itemName, Pageable pageable) {
         List<Auction> result = from(auction)
                 .leftJoin(auction.item, item).fetchJoin()
                 .where(auction.isUse.isTrue(),
                         auction.status.eq(AuctionStatus.RUNNING),
-                        containsTitle(title),
+                        containsItemName(itemName),
                         eqItemType(itemType))
                 .offset(pageable.getOffset())
                 .limit(pageable.getPageSize())
@@ -40,7 +41,7 @@ public class AuctionRepositorySupportImpl extends QuerydslRepositorySupport impl
                 .leftJoin(auction.item, item)
                 .where(auction.isUse.isTrue(),
                         auction.status.eq(AuctionStatus.RUNNING),
-                        containsTitle(title),
+                        containsItemName(itemName),
                         eqItemType(itemType));
 
         return PageableExecutionUtils.getPage(result, pageable, countQuery::fetchOne);
@@ -51,8 +52,8 @@ public class AuctionRepositorySupportImpl extends QuerydslRepositorySupport impl
         return auction.item.type.eq(itemType);
     }
 
-    private BooleanExpression containsTitle(String title) {
-        if(!StringUtils.hasText(title)) return null;
-            return auction.title.contains(title);
+    private BooleanExpression containsItemName(String itemName) {
+        if(!StringUtils.hasText(itemName)) return null;
+            return auction.item.name.contains(itemName);
     }
 }
