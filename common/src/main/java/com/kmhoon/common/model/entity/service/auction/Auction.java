@@ -81,4 +81,8 @@ public class Auction extends BaseEntity {
                 .build();
         this.auctionImageList.add(auctionImage);
     }
+
+    public void updateAuctionStatus(AuctionStatus auctionStatus) {
+        this.status = auctionStatus;
+    }
 }

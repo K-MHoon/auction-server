@@ -2,10 +2,10 @@ package com.kmhoon.common.model.entity.service.inventory;
 
 import com.kmhoon.common.enums.CouponStatus;
 import com.kmhoon.common.enums.CouponType;
-import com.kmhoon.common.model.entity.BaseEntity;
 import com.kmhoon.common.model.entity.BaseTimeEntity;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.Comment;
 
 import java.time.LocalDateTime;
 
@@ -25,14 +25,18 @@ public class Coupon extends BaseTimeEntity {
     @JoinColumn(name = "inventory_seq")
     private Inventory inventory;
 
-    // 쿠폰 종류
     @Enumerated(EnumType.STRING)
+    @Comment(value="쿠폰 종류")
     private CouponType type;
 
     // 쿠폰 현재 상태
     @Enumerated(EnumType.STRING)
+    @Comment(value="쿠폰 현재 상태")
     private CouponStatus status;
 
-    // 사용된/만료된 날짜
+    @Comment(value = "사용 완료된 날짜")
     private LocalDateTime endDate;
+
+    @Comment(value = "삭제 여부")
+    private Boolean isUse;
 }

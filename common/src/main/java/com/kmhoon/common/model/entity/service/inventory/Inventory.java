@@ -6,6 +6,8 @@ import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.item.Item;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
+import org.hibernate.annotations.Comment;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -36,6 +38,10 @@ public class Inventory extends BaseTimeEntity {
     private List<Coupon> couponList = new ArrayList<>();
 
     private Long money;
+
+    @Comment("최대 보유 가능한 아이템 수")
+    @ColumnDefault("20")
+    private Long itemLimit;
 
     public void updateMoney(long money) {
         if(this.money > 0) {
