@@ -2,6 +2,8 @@ package com.kmhoon.web.service.auction;
 
 import com.kmhoon.common.enums.AuctionStatus;
 import com.kmhoon.common.enums.CouponStatus;
+import com.kmhoon.common.enums.ItemType;
+import com.kmhoon.common.model.dto.service.auction.AuctionDto;
 import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.auction.Auction;
 import com.kmhoon.common.model.entity.service.inventory.Coupon;
@@ -12,16 +14,20 @@ import com.kmhoon.common.repository.service.item.ItemRepository;
 import com.kmhoon.web.exception.AuctionApiException;
 import com.kmhoon.web.exception.code.auction.AuctionErrorCode;
 import com.kmhoon.web.exception.code.service.item.ItemErrorCode;
+import com.kmhoon.web.service.dto.PageResponseDto;
 import com.kmhoon.web.service.dto.auction.request.AuctionServiceRequestDto;
 import com.kmhoon.web.service.user.UserCommonService;
 import com.kmhoon.web.utils.CustomFileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import static com.kmhoon.web.exception.code.auction.AuctionErrorCode.BETWEEN_ONE_WEEK;
 import static com.kmhoon.web.exception.code.auction.AuctionErrorCode.START_DATE_NOT_GE_END_DATE;
@@ -82,4 +88,20 @@ public class AuctionService {
         auctionRepository.save(auction);
     }
 
+    @Transactional(readOnly = true)
+    public List<AuctionDto> getAuctionSliderList() {
+        List<Auction> runningAuctionList = auctionRepository.findTop10ByIsUseIsTrueAndStatusOrderByStartTimeDesc(AuctionStatus.RUNNING);
+        return runningAuctionList.stream().map(AuctionDto::forSimple).collect(Collectors.toList());
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponseDto<AuctionDto> getAuctionList(ItemType itemType, String itemName, Pageable pageable) {
+        Page<Auction> auctionList = auctionRepository.findAllByItemTypeAndItemNameAndPageable(itemType, itemName, pageable);
+        List<AuctionDto> dtoList = auctionList.stream().map(AuctionDto::forList).collect(Collectors.toList());
+        return PageResponseDto.<AuctionDto>withAll()
+                .dtoList(dtoList)
+                .pageable(pageable)
+                .totalCount(auctionList.getTotalElements())
+                .build();
+    }
 }
