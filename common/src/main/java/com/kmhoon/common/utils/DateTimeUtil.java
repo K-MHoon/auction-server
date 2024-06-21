@@ -1,4 +1,4 @@
-package com.kmhoon.web.utils;
+package com.kmhoon.common.utils;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
