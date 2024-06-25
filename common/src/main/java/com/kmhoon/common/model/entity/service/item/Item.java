@@ -6,10 +6,12 @@ import com.kmhoon.common.model.entity.service.auction.Auction;
 import com.kmhoon.common.model.entity.service.inventory.Inventory;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.NumericBooleanConverter;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * 경매장에 올리는 물건
@@ -75,5 +77,21 @@ public class Item extends BaseEntity {
 
     public void delete() {
         this.isUse = Boolean.FALSE;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
+        Item item = (Item) o;
+        return getSequence() != null && Objects.equals(getSequence(), item.getSequence());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }

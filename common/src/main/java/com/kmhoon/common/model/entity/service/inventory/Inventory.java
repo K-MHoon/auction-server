@@ -1,6 +1,5 @@
 package com.kmhoon.common.model.entity.service.inventory;
 
-import com.kmhoon.common.model.entity.BaseEntity;
 import com.kmhoon.common.model.entity.BaseTimeEntity;
 import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.item.Item;
@@ -8,9 +7,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
+import org.hibernate.proxy.HibernateProxy;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Entity
 @Table(name = "tb_service_inventory")
@@ -55,5 +56,21 @@ public class Inventory extends BaseTimeEntity {
             throw new IllegalArgumentException("잔액이 부족합니다.");
         }
         this.money -= money;
+    }
+
+    @Override
+    public final boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null) return false;
+        Class<?> oEffectiveClass = o instanceof HibernateProxy ? ((HibernateProxy) o).getHibernateLazyInitializer().getPersistentClass() : o.getClass();
+        Class<?> thisEffectiveClass = this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass() : this.getClass();
+        if (thisEffectiveClass != oEffectiveClass) return false;
+        Inventory inventory = (Inventory) o;
+        return getSequence() != null && Objects.equals(getSequence(), inventory.getSequence());
+    }
+
+    @Override
+    public final int hashCode() {
+        return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
 }
