@@ -1,15 +1,19 @@
 package com.kmhoon.web.controller.auction;
 
+import com.kmhoon.common.enums.AuctionStatus;
+import com.kmhoon.common.enums.AuctionType;
 import com.kmhoon.common.enums.ItemType;
 import com.kmhoon.common.model.dto.service.auction.AuctionDto;
 import com.kmhoon.web.controller.dto.auction.CreateAuctionRequest;
 import com.kmhoon.web.service.auction.AuctionService;
 import com.kmhoon.web.service.dto.PageResponseDto;
+import com.kmhoon.web.service.dto.auction.request.AuctionServiceRequestDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
+import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -31,6 +35,25 @@ public class AuctionController {
     @ResponseStatus(HttpStatus.OK)
     public List<AuctionDto> getAuctionSliderList() {
         return auctionService.getAuctionSliderList();
+    }
+
+    @GetMapping("/api/service/auction/my")
+    @ResponseStatus(HttpStatus.OK)
+    public PageResponseDto<AuctionDto> getMyAuctionList(@RequestParam(value = "auction-status", required = false) AuctionStatus auctionStatus,
+                                                        @RequestParam(value = "auction-type", required = false) AuctionType auctionType,
+                                                        @RequestParam(value = "item-type", required = false) ItemType itemType,
+                                                        @RequestParam(value = "item-name", required = false) String itemName,
+                                                        @PageableDefault Pageable pageable) {
+
+        AuctionServiceRequestDto.GetMyAuctionListServiceRequest request = AuctionServiceRequestDto.GetMyAuctionListServiceRequest.builder()
+                .auctionStatus(auctionStatus)
+                .auctionType(auctionType)
+                .itemType(itemType)
+                .itemName(itemName)
+                .pageable(pageable)
+                .build();
+
+        return auctionService.getMyAuctionList(request);
     }
 
     @GetMapping("/api/service/auction")

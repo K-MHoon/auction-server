@@ -91,16 +91,27 @@ public class AuctionService {
     @Transactional(readOnly = true)
     public List<AuctionDto> getAuctionSliderList() {
         List<Auction> runningAuctionList = auctionRepository.findTop10ByIsUseIsTrueAndStatusOrderByStartTimeDesc(AuctionStatus.RUNNING);
-        return runningAuctionList.stream().map(AuctionDto::forSimple).collect(Collectors.toList());
+        return runningAuctionList.stream().map(AuctionDto::forSimple).toList();
     }
 
     @Transactional(readOnly = true)
     public PageResponseDto<AuctionDto> getAuctionList(ItemType itemType, String itemName, Pageable pageable) {
         Page<Auction> auctionList = auctionRepository.findAllByItemTypeAndItemNameAndPageable(itemType, itemName, pageable);
-        List<AuctionDto> dtoList = auctionList.stream().map(AuctionDto::forList).collect(Collectors.toList());
+        List<AuctionDto> dtoList = auctionList.stream().map(AuctionDto::forList).toList();
+        return toPageResponseDto(dtoList, pageable, auctionList);
+    }
+
+    @Transactional(readOnly = true)
+    public PageResponseDto<AuctionDto> getMyAuctionList(AuctionServiceRequestDto.GetMyAuctionListServiceRequest request) {
+        Page<Auction> auctionList = auctionRepository.findAllByMyAuctionList(request.getAuctionStatus(), request.getAuctionType(), request.getItemType(), request.getItemName(), userCommonService.getLoggedInUser(), request.getPageable());
+        List<AuctionDto> dtoList = auctionList.stream().map(AuctionDto::forMyList).toList();
+        return toPageResponseDto(dtoList, request.getPageable(), auctionList);
+    }
+
+    private static PageResponseDto<AuctionDto> toPageResponseDto(List<AuctionDto> dtoList, Pageable request, Page<Auction> auctionList) {
         return PageResponseDto.<AuctionDto>withAll()
                 .dtoList(dtoList)
-                .pageable(pageable)
+                .pageable(request)
                 .totalCount(auctionList.getTotalElements())
                 .build();
     }
