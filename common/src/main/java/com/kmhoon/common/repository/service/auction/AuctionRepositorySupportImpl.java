@@ -5,7 +5,6 @@ import com.kmhoon.common.enums.AuctionType;
 import com.kmhoon.common.enums.ItemType;
 import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.auction.Auction;
-import com.querydsl.core.BooleanBuilder;
 import com.querydsl.core.types.dsl.BooleanExpression;
 import com.querydsl.jpa.JPQLQuery;
 import org.springframework.data.domain.Page;
@@ -82,7 +81,7 @@ public class AuctionRepositorySupportImpl extends QuerydslRepositorySupport impl
 
     private BooleanExpression containsItemName(String itemName) {
         if(!StringUtils.hasText(itemName)) return null;
-            return auction.item.name.contains(itemName);
+        return auction.item.name.contains(itemName);
     }
 
     private BooleanExpression eqAuctionStatus(AuctionStatus auctionStatus) {
