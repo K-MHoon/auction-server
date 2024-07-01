@@ -28,7 +28,7 @@ public class SocketChannelInterceptor implements ChannelInterceptor {
             if(jwtToken == null) {
                 throw new AuctionApiException(SecurityErrorCode.VALIDATION_TOKEN);
             }
-            Claims claims = jwtTokenProvider.validate(jwtToken);
+            Claims claims = jwtTokenProvider.validate(jwtToken.replace("Bearer ", ""));
             log.info("Connect = {}", claims.get("email"));
         }
 
