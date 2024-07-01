@@ -17,20 +17,20 @@ import com.kmhoon.web.exception.code.service.item.ItemErrorCode;
 import com.kmhoon.web.service.dto.PageResponseDto;
 import com.kmhoon.web.service.dto.auction.request.AuctionServiceRequestDto;
 import com.kmhoon.web.service.user.UserCommonService;
+import com.kmhoon.web.socket.dto.AuctionParticipantDto;
 import com.kmhoon.web.utils.CustomFileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.stream.Collectors;
 
-import static com.kmhoon.web.exception.code.auction.AuctionErrorCode.BETWEEN_ONE_WEEK;
-import static com.kmhoon.web.exception.code.auction.AuctionErrorCode.START_DATE_NOT_GE_END_DATE;
+import static com.kmhoon.web.exception.code.auction.AuctionErrorCode.*;
 
 @Service
 @RequiredArgsConstructor
@@ -42,6 +42,7 @@ public class AuctionService {
     private final UserCommonService userCommonService;
     private final CouponRepository couponRepository;
     private final CustomFileUtil fileUtil;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
     public void createAuction(AuctionServiceRequestDto.CreateAuctionServiceRequest request) {
@@ -114,5 +115,32 @@ public class AuctionService {
                 .pageable(request)
                 .totalCount(auctionList.getTotalElements())
                 .build();
+    }
+
+    @Transactional
+    public void participate(Long auctionSeq) {
+        User loggedInUser = userCommonService.getLoggedInUser();
+        Auction auction = auctionRepository.findBySequenceAndIsUseIsTrueAndStatus(auctionSeq, AuctionStatus.RUNNING).orElseThrow(() -> new AuctionApiException(AuctionErrorCode.SEQ_NOT_FOUND_OR_NOT_RUNNING));
+
+        String redisKey = String.format("auction:%d:participant", auctionSeq);
+        String redisChannel = String.format("/sub/auction/%d/participant", auctionSeq);
+
+        if(getCurrentCount(redisKey) >= auction.getMaxParticipantCount()) {
+            throw new AuctionApiException(OVER_MAX_PARTICIPANT_COUNT);
+        }
+
+        redisTemplate.opsForZSet().add(redisKey, loggedInUser.getSequence(), System.currentTimeMillis());
+
+        AuctionParticipantDto.AuctionParticipantMessage message = AuctionParticipantDto.AuctionParticipantMessage.builder()
+                .auctionSeq(auctionSeq)
+                .userSeq(loggedInUser.getSequence())
+                .count(getCurrentCount(redisKey))
+                .build();
+
+        redisTemplate.convertAndSend(redisChannel, AuctionParticipantDto.create(message));
+    }
+
+    private Long getCurrentCount(String redisKey) {
+        return redisTemplate.opsForZSet().zCard(redisKey);
     }
 }
