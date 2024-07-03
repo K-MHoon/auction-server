@@ -29,6 +29,9 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
+import java.util.function.ObjLongConsumer;
 
 import static com.kmhoon.web.exception.code.auction.AuctionErrorCode.*;
 
@@ -118,7 +121,16 @@ public class AuctionService {
     }
 
     @Transactional
+    public void exit(Long auctionSeq) {
+        joinTemplate(auctionSeq, (key, seq) -> redisTemplate.opsForZSet().remove(key, seq));
+    }
+
+    @Transactional
     public void participate(Long auctionSeq) {
+        joinTemplate(auctionSeq, (key, seq) -> redisTemplate.opsForZSet().add(key, seq, System.currentTimeMillis()));
+    }
+
+    private void joinTemplate(Long auctionSeq, ObjLongConsumer<String> consumer) {
         User loggedInUser = userCommonService.getLoggedInUser();
         Auction auction = auctionRepository.findBySequenceAndIsUseIsTrueAndStatus(auctionSeq, AuctionStatus.RUNNING).orElseThrow(() -> new AuctionApiException(AuctionErrorCode.SEQ_NOT_FOUND_OR_NOT_RUNNING));
 
@@ -129,7 +141,7 @@ public class AuctionService {
             throw new AuctionApiException(OVER_MAX_PARTICIPANT_COUNT);
         }
 
-        redisTemplate.opsForZSet().add(redisKey, loggedInUser.getSequence(), System.currentTimeMillis());
+        consumer.accept(redisKey, loggedInUser.getSequence());
 
         AuctionParticipantDto.AuctionParticipantMessage message = AuctionParticipantDto.AuctionParticipantMessage.builder()
                 .auctionSeq(auctionSeq)
