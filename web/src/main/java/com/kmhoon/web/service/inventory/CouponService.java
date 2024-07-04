@@ -37,7 +37,7 @@ public class CouponService {
         try {
             inventory.minusMoney(dto.getPrice());
         } catch (IllegalArgumentException ex) {
-            throw new AuctionApiException(ex, ex.getMessage());
+            throw new AuctionApiException(ex.getMessage(), ex);
         }
 
         List<Coupon> couponList = LongStream.rangeClosed(0, dto.getCount()).mapToObj(c -> Coupon.builder()

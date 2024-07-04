@@ -12,12 +12,12 @@ public class AuctionApiException extends RuntimeException{
 
     private final ErrorCode errorCode;
 
-    public AuctionApiException(Throwable cause, ErrorCode errorCode) {
+    public AuctionApiException(ErrorCode errorCode, Throwable cause) {
         super(cause);
         this.errorCode = errorCode;
     }
 
-    public AuctionApiException(Throwable cause, String message) {
+    public AuctionApiException(String message, Throwable cause) {
         super(cause);
         this.errorCode = new AbstractCommonModuleErrorCode() {
             @Override
