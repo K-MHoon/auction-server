@@ -13,7 +13,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
-import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -62,5 +61,11 @@ public class AuctionController {
                                                       @RequestParam(value = "item-name", required = false) String itemName,
                                                       @PageableDefault Pageable pageable) {
         return auctionService.getAuctionList(itemType, itemName, pageable);
+    }
+
+    @PostMapping("/api/service/auction/{seq}/participate")
+    @ResponseStatus(HttpStatus.OK)
+    public void participate(@PathVariable("seq") Long auctionSeq) {
+        auctionService.participate(auctionSeq);
     }
 }
