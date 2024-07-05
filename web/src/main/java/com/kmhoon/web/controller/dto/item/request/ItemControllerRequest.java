@@ -1,7 +1,7 @@
 package com.kmhoon.web.controller.dto.item.request;
 
 import com.kmhoon.common.enums.ItemType;
-import com.kmhoon.web.service.dto.item.ItemServiceRequestDto;
+import com.kmhoon.web.service.dto.item.request.ItemServiceRequestDto;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;

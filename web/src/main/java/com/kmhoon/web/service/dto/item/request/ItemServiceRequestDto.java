@@ -1,4 +1,4 @@
-package com.kmhoon.web.service.dto.item;
+package com.kmhoon.web.service.dto.item.request;
 
 import com.kmhoon.common.enums.ItemType;
 import lombok.*;

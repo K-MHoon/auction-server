@@ -4,7 +4,6 @@ import com.kmhoon.common.model.dto.service.auction.AuctionDto;
 import com.kmhoon.common.model.dto.service.item.ItemDto;
 import com.kmhoon.web.controller.dto.item.request.ItemControllerRequest;
 import com.kmhoon.web.service.dto.PageResponseDto;
-import com.kmhoon.web.service.dto.item.ItemServiceResponseDto;
 import com.kmhoon.web.service.item.ItemService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -14,8 +13,6 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @Slf4j
