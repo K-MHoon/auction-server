@@ -85,6 +85,8 @@ public class AuctionService {
                 .endTime(request.getEndTime())
                 .status(AuctionStatus.BEFORE)
                 .item(item)
+                .priceUnit(request.getPriceUnit())
+                .maxParticipantCount(request.getMaxParticipantCount())
                 .build();
 
         uploadImageFileNames.forEach(auction::addImage);
@@ -118,6 +120,13 @@ public class AuctionService {
                 .pageable(request)
                 .totalCount(auctionList.getTotalElements())
                 .build();
+    }
+
+    @Transactional(readOnly = true)
+    public AuctionDto getAuction(Long auctionSeq) {
+        Auction auction = auctionRepository.findBySequenceAndIsUseIsTrueAndStatus(auctionSeq, AuctionStatus.RUNNING)
+                .orElseThrow(() -> new AuctionApiException(AUCTION_NOT_FOUND));
+        return AuctionDto.forMyList(auction);
     }
 
     @Transactional

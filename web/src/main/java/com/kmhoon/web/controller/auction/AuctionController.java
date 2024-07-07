@@ -68,4 +68,10 @@ public class AuctionController {
     public void participate(@PathVariable("seq") Long auctionSeq) {
         auctionService.participate(auctionSeq);
     }
+
+    @GetMapping("/api/service/auction/{seq}")
+    @ResponseStatus(HttpStatus.OK)
+    public AuctionDto getAuction(@PathVariable("seq") Long auctionSeq) {
+        return auctionService.getAuction(auctionSeq);
+    }
 }
