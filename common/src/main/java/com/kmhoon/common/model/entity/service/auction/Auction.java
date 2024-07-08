@@ -7,6 +7,7 @@ import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.item.Item;
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.ColumnDefault;
 import org.hibernate.annotations.Comment;
 import org.hibernate.proxy.HibernateProxy;
 import org.hibernate.type.NumericBooleanConverter;
@@ -29,25 +30,28 @@ public class Auction extends BaseEntity {
     @Column(nullable = false, updatable = false)
     private Long sequence;
 
-    // 판매 제목
+    @Comment("경매제목")
     private String title;
 
-    // 최소 비용
+    @Comment("시작비용")
     private Long minPrice;
 
-    // 현재 금액 또는 판매 최종 금액
+    @Comment("현재금액")
     private Long price;
 
-    // 판매 글
+    @Comment("설명")
     private String description;
 
     @Enumerated(value = EnumType.STRING)
+    @Comment("경매유형")
     private AuctionType auctionType;
 
     @Enumerated(value = EnumType.STRING)
+    @Comment("경매상태")
     private AuctionStatus status;
 
     @Convert(converter = NumericBooleanConverter.class)
+    @Comment("삭제여부")
     private Boolean isUse;
 
     @Comment("경매시작시간")
@@ -61,15 +65,28 @@ public class Auction extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "item_seq")
+    @Comment("판매물품")
     private Item item;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "seller_seq")
+    @Comment("판매자")
     private User seller;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "buyer_seq")
+    @Comment("구매자")
     private User buyer;
+
+    @Comment("최대참가자수")
+    @ColumnDefault("20")
+    @Builder.Default
+    private Long maxParticipantCount = 20L;
+
+    @Comment("금액단위")
+    @ColumnDefault("0")
+    @Builder.Default
+    private Long priceUnit = 0L;
 
     @ElementCollection
     @Builder.Default
