@@ -28,6 +28,8 @@ public class AuctionServiceRequestDto {
         private LocalDateTime startTime;
         private LocalDateTime endTime;
         private Long itemSeq;
+        private Long priceUnit;
+        private Long maxParticipantCount;
         @Builder.Default
         private List<MultipartFile> images = new ArrayList<>();
     }

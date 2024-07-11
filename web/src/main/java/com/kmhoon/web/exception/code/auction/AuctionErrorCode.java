@@ -15,6 +15,7 @@ public enum AuctionErrorCode implements ErrorCode {
     HAS_NOT_COUPON("S-AUCTION-004",HttpStatus.BAD_REQUEST, "사용가능한 쿠폰이 존재하지 않습니다."),
     SEQ_NOT_FOUND_OR_NOT_RUNNING("S-AUCTION-005",HttpStatus.BAD_REQUEST, "해당 경매가 존재하지 않거나, 진행중인 상태가 아닙니다."),
     OVER_MAX_PARTICIPANT_COUNT("S-AUCTION-006",HttpStatus.BAD_REQUEST, "해당 경매의 최대 참가자 수를 초과했습니다."),
+    AUCTION_NOT_FOUND("S-AUCTION-007",HttpStatus.BAD_REQUEST, "해당 경매 정보를 찾을 수 없습니다."),
 
     ;
 
