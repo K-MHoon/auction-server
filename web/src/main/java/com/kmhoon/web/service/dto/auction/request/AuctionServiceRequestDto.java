@@ -19,7 +19,7 @@ public class AuctionServiceRequestDto {
     @Getter
     @ToString
     @Builder
-    public static class CreateAuctionServiceRequest {
+    public static class CreateAuction {
 
         private String title;
         private Long minPrice;
@@ -39,7 +39,7 @@ public class AuctionServiceRequestDto {
     @ToString
     @AllArgsConstructor(access = AccessLevel.PRIVATE)
     @NoArgsConstructor(access = AccessLevel.PRIVATE)
-    public static final class GetMyAuctionListServiceRequest {
+    public static final class GetMyAuctionList {
 
         private AuctionStatus auctionStatus;
         private AuctionType auctionType;

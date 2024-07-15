@@ -4,10 +4,11 @@ import com.kmhoon.common.enums.AuctionStatus;
 import com.kmhoon.common.enums.AuctionType;
 import com.kmhoon.common.enums.ItemType;
 import com.kmhoon.common.model.dto.service.auction.AuctionDto;
-import com.kmhoon.web.controller.dto.auction.CreateAuctionRequest;
+import com.kmhoon.web.controller.dto.auction.request.AuctionControllerRequestDto;
 import com.kmhoon.web.service.auction.AuctionService;
 import com.kmhoon.web.service.dto.PageResponseDto;
 import com.kmhoon.web.service.dto.auction.request.AuctionServiceRequestDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Pageable;
@@ -26,7 +27,7 @@ public class AuctionController {
 
     @PostMapping("/api/service/auction")
     @ResponseStatus(HttpStatus.OK)
-    public void createAuction(@ModelAttribute CreateAuctionRequest request) {
+    public void createAuction(@ModelAttribute AuctionControllerRequestDto.CreateAuction request) {
         auctionService.createAuction(request.toServiceRequest());
     }
 
@@ -44,7 +45,7 @@ public class AuctionController {
                                                         @RequestParam(value = "item-name", required = false) String itemName,
                                                         @PageableDefault Pageable pageable) {
 
-        AuctionServiceRequestDto.GetMyAuctionListServiceRequest request = AuctionServiceRequestDto.GetMyAuctionListServiceRequest.builder()
+        AuctionServiceRequestDto.GetMyAuctionList request = AuctionServiceRequestDto.GetMyAuctionList.builder()
                 .auctionStatus(auctionStatus)
                 .auctionType(auctionType)
                 .itemType(itemType)
@@ -73,5 +74,12 @@ public class AuctionController {
     @ResponseStatus(HttpStatus.OK)
     public AuctionDto getAuction(@PathVariable("seq") Long auctionSeq) {
         return auctionService.getAuction(auctionSeq);
+    }
+
+    @PostMapping("/api/service/auction/{seq}/price")
+    @ResponseStatus(HttpStatus.OK)
+    public void updatePrice(@PathVariable("seq") Long auctionSeq,
+                            @RequestBody @Valid AuctionControllerRequestDto.UpdatePrice request) {
+        auctionService.updatePrice(auctionSeq, request.getPrice());
     }
 }
