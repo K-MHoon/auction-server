@@ -18,19 +18,20 @@ import com.kmhoon.web.service.dto.PageResponseDto;
 import com.kmhoon.web.service.dto.auction.request.AuctionServiceRequestDto;
 import com.kmhoon.web.service.user.UserCommonService;
 import com.kmhoon.web.socket.dto.AuctionParticipantDto;
+import com.kmhoon.web.socket.dto.AuctionPriceDto;
 import com.kmhoon.web.utils.CustomFileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.temporal.ChronoUnit;
 import java.util.List;
-import java.util.function.BiConsumer;
-import java.util.function.Consumer;
+import java.util.Set;
 import java.util.function.ObjLongConsumer;
 
 import static com.kmhoon.web.exception.code.auction.AuctionErrorCode.*;
@@ -48,7 +49,7 @@ public class AuctionService {
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
-    public void createAuction(AuctionServiceRequestDto.CreateAuctionServiceRequest request) {
+    public void createAuction(AuctionServiceRequestDto.CreateAuction request) {
         User loggedInUser = userCommonService.getLoggedInUser();
         Item item = itemRepository.findByInventoryAndSequenceAndIsUseIsTrue(loggedInUser.getInventory(), request.getItemSeq())
                 .orElseThrow(() -> new AuctionApiException(ItemErrorCode.HAS_NOT_SEQ_REQUEST));
@@ -108,7 +109,7 @@ public class AuctionService {
     }
 
     @Transactional(readOnly = true)
-    public PageResponseDto<AuctionDto> getMyAuctionList(AuctionServiceRequestDto.GetMyAuctionListServiceRequest request) {
+    public PageResponseDto<AuctionDto> getMyAuctionList(AuctionServiceRequestDto.GetMyAuctionList request) {
         Page<Auction> auctionList = auctionRepository.findAllByMyAuctionList(request.getAuctionStatus(), request.getAuctionType(), request.getItemType(), request.getItemName(), userCommonService.getLoggedInUser(), request.getPageable());
         List<AuctionDto> dtoList = auctionList.stream().map(AuctionDto::forMyList).toList();
         return toPageResponseDto(dtoList, request.getPageable(), auctionList);
@@ -163,5 +164,38 @@ public class AuctionService {
 
     private Long getCurrentCount(String redisKey) {
         return redisTemplate.opsForZSet().zCard(redisKey);
+    }
+
+    @Transactional
+    public void updatePrice(Long auctionSeq, Long price) {
+        Auction auction = auctionRepository.findBySequenceAndIsUseIsTrueAndStatus(auctionSeq, AuctionStatus.RUNNING).orElseThrow(() -> new AuctionApiException(AuctionErrorCode.SEQ_NOT_FOUND_OR_NOT_RUNNING));
+        User loggedInUser = userCommonService.getLoggedInUser();
+
+        String redisKey = String.format("auction:%d:price", auction.getSequence());
+        String redisChannel = String.format("/sub/auction/%d/price", auction.getSequence());
+
+        long currentPrice = getHighScore(redisKey) == null ? auction.getMinPrice() : getHighScore(redisKey).longValue();
+        if(price <= currentPrice) {
+            throw new AuctionApiException(PRICE_LESS_THAN_BEFORE_PRICE);
+        }
+
+        redisTemplate.opsForZSet().add(redisKey, loggedInUser.getSequence(), price);
+
+        AuctionPriceDto.AuctionPriceMessage message = AuctionPriceDto.AuctionPriceMessage.builder()
+                .auctionSeq(auctionSeq)
+                .userSeq(loggedInUser.getSequence())
+                .price(price)
+                .build();
+
+        redisTemplate.convertAndSend(redisChannel, AuctionPriceDto.create(message));
+    }
+
+    private Double getHighScore(String key) {
+        ZSetOperations<String, Object> zSetOps = redisTemplate.opsForZSet();
+        Set<ZSetOperations.TypedTuple<Object>> resultSet = zSetOps.reverseRangeWithScores(key, 0, 0);
+        if (resultSet != null && !resultSet.isEmpty()) {
+            return resultSet.iterator().next().getScore();
+        }
+        return null;
     }
 }
