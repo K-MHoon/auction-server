@@ -35,7 +35,7 @@ public class JwtFilter extends OncePerRequestFilter {
             Authentication authentication = jwtTokenProvider.getAuthentication(token);
             SecurityContextHolder.getContext().setAuthentication(authentication);
         } catch (Exception ex) {
-            this.resolver.resolveException(request, response, null, new AuctionApiException(ex, SecurityErrorCode.VALIDATION_TOKEN));
+            this.resolver.resolveException(request, response, null, new AuctionApiException(SecurityErrorCode.VALIDATION_TOKEN, ex));
             return;
         }
         filterChain.doFilter(request, response);

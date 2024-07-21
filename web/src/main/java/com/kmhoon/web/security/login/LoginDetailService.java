@@ -36,7 +36,7 @@ public class LoginDetailService implements UserDetailsService {
                 .map(u -> new SimpleGrantedAuthority(u.getRole().getName()))
                 .collect(Collectors.toList());
 
-        return new org.springframework.security.core.userdetails.User(user.getEmail(), user.getPassword(), authorityList);
+        return new UserDto(user.getEmail(), user.getName(), user.getPassword(), authorityList);
     }
 
 
