@@ -166,17 +166,37 @@ public class AuctionService {
         return redisTemplate.opsForZSet().zCard(redisKey);
     }
 
+    @Transactional(readOnly = true)
+    public long getCurrentPrice(Long auctionSeq) {
+        Auction auction = auctionRepository.findBySequenceAndIsUseIsTrueAndStatus(auctionSeq, AuctionStatus.RUNNING).orElseThrow(() -> new AuctionApiException(AuctionErrorCode.SEQ_NOT_FOUND_OR_NOT_RUNNING));
+
+        String redisKey = String.format("auction:%d:price", auction.getSequence());
+
+        Double highScore = getHighScore(redisKey);
+        return highScore == null ? auction.getMinPrice() : highScore.longValue();
+    }
+
     @Transactional
     public void updatePrice(Long auctionSeq, Long price) {
         Auction auction = auctionRepository.findBySequenceAndIsUseIsTrueAndStatus(auctionSeq, AuctionStatus.RUNNING).orElseThrow(() -> new AuctionApiException(AuctionErrorCode.SEQ_NOT_FOUND_OR_NOT_RUNNING));
         User loggedInUser = userCommonService.getLoggedInUser();
 
+        if(price > loggedInUser.getInventory().getMoney()) {
+            throw new AuctionApiException(PRICE_LESS_THAN_HAS_MONEY);
+        }
+
         String redisKey = String.format("auction:%d:price", auction.getSequence());
         String redisChannel = String.format("/sub/auction/%d/price", auction.getSequence());
 
-        long currentPrice = getHighScore(redisKey) == null ? auction.getMinPrice() : getHighScore(redisKey).longValue();
+        Double highScore = getHighScore(redisKey);
+
+        long currentPrice = highScore == null ? auction.getMinPrice() : highScore.longValue();
         if(price <= currentPrice) {
             throw new AuctionApiException(PRICE_LESS_THAN_BEFORE_PRICE);
+        }
+
+        if(price < (currentPrice + auction.getPriceUnit())) {
+            throw new AuctionApiException(PRICE_LESS_THAN_NEXT_PRICE);
         }
 
         redisTemplate.opsForZSet().add(redisKey, loggedInUser.getSequence(), price);
