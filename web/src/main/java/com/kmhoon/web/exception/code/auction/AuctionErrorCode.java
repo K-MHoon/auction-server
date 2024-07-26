@@ -16,7 +16,9 @@ public enum AuctionErrorCode implements ErrorCode {
     SEQ_NOT_FOUND_OR_NOT_RUNNING("S-AUCTION-005",HttpStatus.BAD_REQUEST, "해당 경매가 존재하지 않거나, 진행중인 상태가 아닙니다."),
     OVER_MAX_PARTICIPANT_COUNT("S-AUCTION-006",HttpStatus.BAD_REQUEST, "해당 경매의 최대 참가자 수를 초과했습니다."),
     AUCTION_NOT_FOUND("S-AUCTION-007",HttpStatus.BAD_REQUEST, "해당 경매 정보를 찾을 수 없습니다."),
-    PRICE_LESS_THAN_BEFORE_PRICE("S-AUCTION-008",HttpStatus.BAD_REQUEST, "요청한 가격이 현재 경매 가격보다 낮습니다."),
+    PRICE_LESS_THAN_BEFORE_PRICE("S-AUCTION-008",HttpStatus.BAD_REQUEST, "요청한 가격이 현재 경매 가격과 같거나 낮습니다."),
+    PRICE_LESS_THAN_HAS_MONEY("S-AUCTION-009",HttpStatus.BAD_REQUEST, "현재 보유한 금액보다 더 높은 금액을 요청했습니다."),
+    PRICE_LESS_THAN_NEXT_PRICE("S-AUCTION-010",HttpStatus.BAD_REQUEST, "최소 다음 금액 미만의 금액을 요청했습니다."),
 
     ;
 

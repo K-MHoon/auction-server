@@ -82,4 +82,10 @@ public class AuctionController {
                             @RequestBody @Valid AuctionControllerRequestDto.UpdatePrice request) {
         auctionService.updatePrice(auctionSeq, request.getPrice());
     }
+
+    @GetMapping("/api/service/auction/{seq}/price")
+    @ResponseStatus(HttpStatus.OK)
+    public long getCurrentPrice(@PathVariable("seq") Long auctionSeq) {
+        return auctionService.getCurrentPrice(auctionSeq);
+    }
 }
