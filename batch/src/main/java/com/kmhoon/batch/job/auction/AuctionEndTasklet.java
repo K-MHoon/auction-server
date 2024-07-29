@@ -3,6 +3,7 @@ package com.kmhoon.batch.job.auction;
 import com.kmhoon.common.enums.AuctionStatus;
 import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.auction.Auction;
+import com.kmhoon.common.model.entity.service.inventory.Inventory;
 import com.kmhoon.common.repository.auth.user.UserRepository;
 import com.kmhoon.common.repository.service.auction.AuctionRepository;
 import lombok.RequiredArgsConstructor;
@@ -37,18 +38,24 @@ public class AuctionEndTasklet implements Tasklet {
             String redisKey = String.format("auction:%d:price", auction.getSequence());
             ZSetOperations.TypedTuple<Object> highScoreTuple = getHighScoreTuple(redisKey);
             if (highScoreTuple != null) {
-                // 1. 낙찰된 가격, 시간으로 업데이트 한다.
-                auction.updatePrice(highScoreTuple.getScore().longValue());
-                auction.updateSoldTime(auction.getEndTime());
+                // 1. 낙찰자 검증
                 Optional<User> buyerOps = userRepository.findByEmailWithInventory(highScoreTuple.getValue().toString());
                 if (buyerOps.isEmpty()) {
                     continue;
                 }
                 User buyer = buyerOps.get();
-                // 2. 낙찰자가 가진 금액에서 경매 비용만큼 차감한다.
-                buyer.getInventory().updateMoney(buyer.getInventory().getMoney() - auction.getPrice());
-                // 3. 최종 낙찰자를 Buyer로 등록한다.
+                Inventory inventory = buyer.getInventory();
+                if(inventory.getMoney() < highScoreTuple.getScore().longValue()) {
+                    continue;
+                }
+                // 2. 낙찰가, 낙찰 최종 시간, 낙찰자 업데이트
+                auction.updatePrice(highScoreTuple.getScore().longValue());
+                auction.updateSoldTime(auction.getEndTime());
                 auction.updateBuyer(buyer);
+
+                // 3. 금액 차감
+                inventory.updateMoney(inventory.getMoney() - auction.getPrice());
+
                 // 4. 낙찰자의 인벤토리로 이동시킨다.
                 auction.getItem().updateInventory(buyer.getInventory());
             }
