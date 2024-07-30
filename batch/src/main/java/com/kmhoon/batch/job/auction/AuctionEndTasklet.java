@@ -34,9 +34,11 @@ public class AuctionEndTasklet implements Tasklet {
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
         String date = chunkContext.getStepContext().getJobParameters().get("date").toString();
         List<Auction> startTargetAuctionList = auctionRepository.findAllByEndTimeAndIsUseIsTrueAndStatus(LocalDateTime.parse(date).withSecond(0).withNano(0), AuctionStatus.RUNNING);
+
         for (Auction auction : startTargetAuctionList) {
-            String redisKey = String.format("auction:%d:price", auction.getSequence());
-            ZSetOperations.TypedTuple<Object> highScoreTuple = getHighScoreTuple(redisKey);
+            String redisPriceKey = String.format("auction:%d:price", auction.getSequence());
+            String redisParticipantKey = String.format("auction:%d:participant", auction.getSequence());
+            ZSetOperations.TypedTuple<Object> highScoreTuple = getHighScoreTuple(redisPriceKey);
             if (highScoreTuple != null) {
                 // 1. 낙찰자 검증
                 Optional<User> buyerOps = userRepository.findByEmailWithInventory(highScoreTuple.getValue().toString());
@@ -60,6 +62,8 @@ public class AuctionEndTasklet implements Tasklet {
                 auction.getItem().updateInventory(buyer.getInventory());
             }
             auction.updateAuctionStatus(AuctionStatus.FINISHED);
+
+            redisTemplate.delete(List.of(redisPriceKey, redisParticipantKey));
         }
         return RepeatStatus.FINISHED;
     }
