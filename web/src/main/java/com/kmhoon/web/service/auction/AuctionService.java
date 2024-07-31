@@ -7,7 +7,9 @@ import com.kmhoon.common.model.dto.service.auction.AuctionDto;
 import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.auction.Auction;
 import com.kmhoon.common.model.entity.service.inventory.Coupon;
+import com.kmhoon.common.model.entity.service.inventory.Inventory;
 import com.kmhoon.common.model.entity.service.item.Item;
+import com.kmhoon.common.repository.auth.user.UserRepository;
 import com.kmhoon.common.repository.service.auction.AuctionRepository;
 import com.kmhoon.common.repository.service.inventory.CouponRepository;
 import com.kmhoon.common.repository.service.item.ItemRepository;
@@ -29,8 +31,10 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.ObjLongConsumer;
 
@@ -46,6 +50,7 @@ public class AuctionService {
     private final UserCommonService userCommonService;
     private final CouponRepository couponRepository;
     private final CustomFileUtil fileUtil;
+    private final UserRepository userRepository;
     private final RedisTemplate<String, Object> redisTemplate;
 
     @Transactional
@@ -172,8 +177,8 @@ public class AuctionService {
 
         String redisKey = String.format("auction:%d:price", auction.getSequence());
 
-        Double highScore = getHighScore(redisKey);
-        return highScore == null ? auction.getMinPrice() : highScore.longValue();
+        ZSetOperations.TypedTuple<Object> highScoreTuple = getHighScoreTuple(redisKey);
+        return highScoreTuple == null ? auction.getMinPrice() : highScoreTuple.getScore().longValue();
     }
 
     @Transactional
@@ -188,9 +193,9 @@ public class AuctionService {
         String redisKey = String.format("auction:%d:price", auction.getSequence());
         String redisChannel = String.format("/sub/auction/%d/price", auction.getSequence());
 
-        Double highScore = getHighScore(redisKey);
+        ZSetOperations.TypedTuple<Object> highScoreTuple = getHighScoreTuple(redisKey);
 
-        long currentPrice = highScore == null ? auction.getMinPrice() : highScore.longValue();
+        long currentPrice = highScoreTuple == null ? auction.getMinPrice() : highScoreTuple.getScore().longValue();
         if(price <= currentPrice) {
             throw new AuctionApiException(PRICE_LESS_THAN_BEFORE_PRICE);
         }
@@ -210,11 +215,50 @@ public class AuctionService {
         redisTemplate.convertAndSend(redisChannel, AuctionPriceDto.create(message));
     }
 
-    private Double getHighScore(String key) {
+    @Transactional
+    public void finishAuction(Long auctionSeq, AuctionStatus auctionStatus) {
+        User loggedInUser = userCommonService.getLoggedInUser();
+        Auction auction = auctionRepository.findBySequenceAndIsUseIsTrueAndStatusAndSeller(auctionSeq, AuctionStatus.RUNNING, loggedInUser).orElseThrow(() -> new AuctionApiException(AUCTION_NOT_FOUND));
+
+        String redisPriceKey = String.format("auction:%d:price", auction.getSequence());
+        String redisParticipantKey = String.format("auction:%d:participant", auction.getSequence());
+
+        if(auctionStatus == AuctionStatus.STOPPED) {
+            auction.updateAuctionStatus(AuctionStatus.STOPPED);
+        } else if(auctionStatus == AuctionStatus.FINISHED) {
+            auction.updateAuctionStatus(AuctionStatus.FINISHED);
+
+            ZSetOperations.TypedTuple<Object> highScoreTuple = getHighScoreTuple(redisPriceKey);
+
+            if (highScoreTuple != null) {
+                // 1. 낙찰자 검증
+                Optional<User> buyerOps = userRepository.findByEmailWithInventory(highScoreTuple.getValue().toString());
+
+                if(buyerOps.isPresent()) {
+                    User buyer = buyerOps.get();
+                    Inventory buyerInventory = buyer.getInventory();
+
+                    if(buyerInventory.getMoney() >= highScoreTuple.getScore().longValue()) {
+                        auction.updatePrice(highScoreTuple.getScore().longValue());
+                        auction.updateSoldTime(LocalDateTime.now());
+                        auction.updateBuyer(buyer);
+                        buyerInventory.updateMoney(buyerInventory.getMoney() - auction.getPrice());
+                        auction.getItem().updateInventory(buyer.getInventory());
+                    }
+                }
+            }
+            auction.updateAuctionStatus(AuctionStatus.FINISHED);
+        }
+
+        redisTemplate.delete(List.of(redisPriceKey, redisParticipantKey));
+    }
+
+    private ZSetOperations.TypedTuple<Object> getHighScoreTuple(String key) {
         ZSetOperations<String, Object> zSetOps = redisTemplate.opsForZSet();
         Set<ZSetOperations.TypedTuple<Object>> resultSet = zSetOps.reverseRangeWithScores(key, 0, 0);
+
         if (resultSet != null && !resultSet.isEmpty()) {
-            return resultSet.iterator().next().getScore();
+            return resultSet.iterator().next();
         }
         return null;
     }
