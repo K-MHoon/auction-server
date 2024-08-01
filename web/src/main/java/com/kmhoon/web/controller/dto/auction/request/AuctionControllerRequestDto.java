@@ -1,5 +1,6 @@
 package com.kmhoon.web.controller.dto.auction.request;
 
+import com.kmhoon.common.enums.AuctionStatus;
 import com.kmhoon.common.enums.AuctionType;
 import com.kmhoon.web.service.dto.auction.request.AuctionServiceRequestDto;
 import jakarta.validation.constraints.Min;
@@ -72,5 +73,16 @@ public class AuctionControllerRequestDto {
         @Min(0)
         @NotNull
         private Long price;
+    }
+
+    @NoArgsConstructor(access = AccessLevel.PRIVATE)
+    @AllArgsConstructor(access = AccessLevel.PRIVATE)
+    @Getter
+    @Builder
+    @ToString
+    public static final class FinishAuction {
+
+        @NotNull
+        private AuctionStatus status;
     }
 }

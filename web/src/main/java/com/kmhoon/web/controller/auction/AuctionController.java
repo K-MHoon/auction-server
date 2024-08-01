@@ -88,4 +88,12 @@ public class AuctionController {
     public long getCurrentPrice(@PathVariable("seq") Long auctionSeq) {
         return auctionService.getCurrentPrice(auctionSeq);
     }
+
+    @PostMapping("/api/service/auction/{seq}/finish")
+    @ResponseStatus(HttpStatus.OK)
+    public void finishAuction(@PathVariable("seq") Long auctionSeq,
+                              @RequestBody @Valid AuctionControllerRequestDto.FinishAuction request) {
+
+        auctionService.finishAuction(auctionSeq, request.getStatus());
+    }
 }
