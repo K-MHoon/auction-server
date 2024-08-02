@@ -84,9 +84,9 @@ public class Auction extends BaseEntity {
     private Long maxParticipantCount = 20L;
 
     @Comment("금액단위")
-    @ColumnDefault("0")
+    @ColumnDefault("10")
     @Builder.Default
-    private Long priceUnit = 0L;
+    private Long priceUnit = 10L;
 
     @ElementCollection
     @Builder.Default
@@ -98,6 +98,14 @@ public class Auction extends BaseEntity {
                 .ord(this.auctionImageList.size())
                 .build();
         this.auctionImageList.add(auctionImage);
+    }
+
+    public void updateBuyer(User buyer) {
+        this.buyer = buyer;
+    }
+
+    public void updatePrice(Long price) {
+        this.price = price;
     }
 
     public void updateAuctionStatus(AuctionStatus auctionStatus) {
@@ -118,5 +126,9 @@ public class Auction extends BaseEntity {
     @Override
     public final int hashCode() {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
+    }
+
+    public void updateSoldTime(LocalDateTime endTime) {
+        this.soldTime = soldTime;
     }
 }

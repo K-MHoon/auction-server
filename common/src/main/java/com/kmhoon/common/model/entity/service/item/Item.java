@@ -94,4 +94,8 @@ public class Item extends BaseEntity {
     public final int hashCode() {
         return this instanceof HibernateProxy ? ((HibernateProxy) this).getHibernateLazyInitializer().getPersistentClass().hashCode() : getClass().hashCode();
     }
+
+    public void updateInventory(Inventory inventory) {
+        this.inventory = inventory;
+    }
 }
