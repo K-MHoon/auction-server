@@ -1,6 +1,7 @@
 package com.kmhoon.common.repository.service.auction;
 
 import com.kmhoon.common.enums.AuctionStatus;
+import com.kmhoon.common.model.entity.auth.user.User;
 import com.kmhoon.common.model.entity.service.auction.Auction;
 import com.kmhoon.common.model.entity.service.inventory.Inventory;
 import com.kmhoon.common.model.entity.service.item.Item;
@@ -22,5 +23,12 @@ public interface AuctionRepository extends JpaRepository<Auction, Long>, Auction
     List<Auction> findTop10ByIsUseIsTrueAndStatusOrderByStartTimeDesc(AuctionStatus auctionStatus);
 
     List<Auction> findAllByStartTimeAndIsUseIsTrueAndStatus(LocalDateTime startTime, AuctionStatus auctionStatus);
+
+    @EntityGraph(attributePaths = {"item", "item.inventory"})
     List<Auction> findAllByEndTimeAndIsUseIsTrueAndStatus(LocalDateTime startTime, AuctionStatus auctionStatus);
+
+    @EntityGraph(attributePaths = {"item", "seller", "buyer", "auctionImageList"})
+    Optional<Auction> findBySequenceAndIsUseIsTrueAndStatus(Long seq, AuctionStatus status);
+
+    Optional<Auction> findBySequenceAndIsUseIsTrueAndStatusAndSeller(Long seq, AuctionStatus auctionStatus, User seller);
 }

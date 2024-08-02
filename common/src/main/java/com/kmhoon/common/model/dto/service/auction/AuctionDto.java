@@ -33,6 +33,8 @@ public final class AuctionDto {
     private List<AuctionImage> auctionImageList;
     private UserDto.Simple seller;
     private UserDto.Simple buyer;
+    private Long maxParticipantCount;
+    private Long priceUnit;
 
     public static AuctionDto forMyList(Auction auction) {
         return AuctionDto.builder()
@@ -50,6 +52,8 @@ public final class AuctionDto {
                 .buyer(UserDto.Simple.of(auction.getSeller()))
                 .auctionImageList(auction.getAuctionImageList())
                 .auctionType(auction.getAuctionType())
+                .maxParticipantCount(auction.getMaxParticipantCount())
+                .priceUnit(auction.getPriceUnit())
                 .build();
     }
 
