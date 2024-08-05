@@ -21,6 +21,7 @@ import com.kmhoon.web.service.dto.auction.request.AuctionServiceRequestDto;
 import com.kmhoon.web.service.user.UserCommonService;
 import com.kmhoon.web.socket.dto.AuctionParticipantDto;
 import com.kmhoon.web.socket.dto.AuctionPriceDto;
+import com.kmhoon.web.socket.dto.AuctionStatusDto;
 import com.kmhoon.web.utils.CustomFileUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -251,6 +252,24 @@ public class AuctionService {
         }
 
         redisTemplate.delete(List.of(redisPriceKey, redisParticipantKey));
+        sendAuctionStatus(auctionSeq, auctionStatus);
+    }
+
+    /**
+     * 경매방 참여자들에게 현재 경매 상태를 전달한다.
+     *
+     * @param auctionSeq
+     * @param auctionStatus
+     */
+    private void sendAuctionStatus(Long auctionSeq, AuctionStatus auctionStatus) {
+        String redisChannel = String.format("/sub/auction/%d/status", auctionSeq);
+
+        AuctionStatusDto.AuctionStatusMessage message = AuctionStatusDto.AuctionStatusMessage.builder()
+                .auctionSeq(auctionSeq)
+                .auctionStatus(auctionStatus)
+                .build();
+
+        redisTemplate.convertAndSend(redisChannel, AuctionStatusDto.create(message));
     }
 
     private ZSetOperations.TypedTuple<Object> getHighScoreTuple(String key) {
