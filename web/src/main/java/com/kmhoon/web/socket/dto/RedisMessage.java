@@ -8,6 +8,7 @@ import com.fasterxml.jackson.annotation.JsonTypeInfo;
         @JsonSubTypes.Type(value = AuctionParticipantDto.class, name = "PARTICIPANT"),
         @JsonSubTypes.Type(value = AuctionPriceDto.class, name = "PRICE"),
         @JsonSubTypes.Type(value = AuctionStatusDto.class, name = "STATUS"),
+        @JsonSubTypes.Type(value = AuctionPriceUserHistoryDto.class, name = "PRICE-HISTORY"),
 })
 public interface RedisMessage {
 
