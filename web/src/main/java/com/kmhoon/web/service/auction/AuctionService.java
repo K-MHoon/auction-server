@@ -13,6 +13,7 @@ import com.kmhoon.common.repository.auth.user.UserRepository;
 import com.kmhoon.common.repository.service.auction.AuctionRepository;
 import com.kmhoon.common.repository.service.inventory.CouponRepository;
 import com.kmhoon.common.repository.service.item.ItemRepository;
+import com.kmhoon.common.utils.DateTimeUtil;
 import com.kmhoon.web.exception.AuctionApiException;
 import com.kmhoon.web.exception.code.auction.AuctionErrorCode;
 import com.kmhoon.web.exception.code.service.item.ItemErrorCode;
@@ -21,6 +22,7 @@ import com.kmhoon.web.service.dto.auction.request.AuctionServiceRequestDto;
 import com.kmhoon.web.service.user.UserCommonService;
 import com.kmhoon.web.socket.dto.AuctionParticipantDto;
 import com.kmhoon.web.socket.dto.AuctionPriceDto;
+import com.kmhoon.web.socket.dto.AuctionPriceUserHistoryDto;
 import com.kmhoon.web.socket.dto.AuctionStatusDto;
 import com.kmhoon.web.utils.CustomFileUtil;
 import lombok.RequiredArgsConstructor;
@@ -32,7 +34,9 @@ import org.springframework.data.redis.core.ZSetOperations;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Instant;
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
@@ -192,7 +196,13 @@ public class AuctionService {
         }
 
         String redisKey = String.format("auction:%d:price", auction.getSequence());
+        String redisPriceHistoryKey = String.format("auction:%d:price:user:%d:history", auction.getSequence(), loggedInUser.getSequence());
+
+        // 경매 참여자 공통으로 보일 Key
         String redisChannel = String.format("/sub/auction/%d/price", auction.getSequence());
+
+        // 개인 화면에 보일 금액 작성 이력 확인
+        String redisHistoryChannel = String.format("/sub/auction/%d/price/user/%d/history", auction.getSequence(), loggedInUser.getSequence());
 
         ZSetOperations.TypedTuple<Object> highScoreTuple = getHighScoreTuple(redisKey);
 
@@ -206,6 +216,7 @@ public class AuctionService {
         }
 
         redisTemplate.opsForZSet().add(redisKey, loggedInUser.getSequence(), price);
+        redisTemplate.opsForZSet().add(redisPriceHistoryKey,price,System.currentTimeMillis());
 
         AuctionPriceDto.AuctionPriceMessage message = AuctionPriceDto.AuctionPriceMessage.builder()
                 .auctionSeq(auctionSeq)
@@ -214,6 +225,27 @@ public class AuctionService {
                 .build();
 
         redisTemplate.convertAndSend(redisChannel, AuctionPriceDto.create(message));
+
+        Set<ZSetOperations.TypedTuple<Object>> tuples = redisTemplate.opsForZSet().reverseRangeWithScores(redisPriceHistoryKey, 0, -1);
+        List<AuctionPriceUserHistoryDto.PriceHistory> list = tuples.stream().map((tuple) -> {
+            Long value = Long.valueOf((String) tuple.getValue());
+            long score = tuple.getScore().longValue();
+            Instant instant = Instant.ofEpochMilli(score);
+            LocalDateTime localDateTime = LocalDateTime.ofInstant(instant, ZoneId.of("Asia/Seoul"));
+
+            return AuctionPriceUserHistoryDto.PriceHistory.builder()
+                    .price(value)
+                    .date(DateTimeUtil.dateTimeToString(localDateTime))
+                    .build();
+        }).toList();
+
+        AuctionPriceUserHistoryDto.AuctionPriceUserHistoryMessage historyMessage = AuctionPriceUserHistoryDto.AuctionPriceUserHistoryMessage.builder()
+                .auctionSeq(auctionSeq)
+                .userSeq(loggedInUser.getSequence())
+                .priceHistoryList(list)
+                .build();
+
+        redisTemplate.convertAndSend(redisHistoryChannel, AuctionPriceUserHistoryDto.create(historyMessage));
     }
 
     @Transactional
