@@ -19,6 +19,7 @@ public enum AuctionErrorCode implements ErrorCode {
     PRICE_LESS_THAN_BEFORE_PRICE("S-AUCTION-008",HttpStatus.BAD_REQUEST, "요청한 가격이 현재 경매 가격과 같거나 낮습니다."),
     PRICE_LESS_THAN_HAS_MONEY("S-AUCTION-009",HttpStatus.BAD_REQUEST, "현재 보유한 금액보다 더 높은 금액을 요청했습니다."),
     PRICE_LESS_THAN_NEXT_PRICE("S-AUCTION-010",HttpStatus.BAD_REQUEST, "최소 다음 금액 미만의 금액을 요청했습니다."),
+    NOT_MATCH_SUBSCRIBE_USER("S-AUCTION-011",HttpStatus.BAD_REQUEST, "구독 요청한 사용자와 로그인한 사용자가 일치하지 않습니다."),
 
     ;
 

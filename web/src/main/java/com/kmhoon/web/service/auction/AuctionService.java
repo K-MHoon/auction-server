@@ -225,6 +225,20 @@ public class AuctionService {
                 .build();
 
         redisTemplate.convertAndSend(redisChannel, AuctionPriceDto.create(message));
+        sendUserPriceHistory(auction.getSequence(), loggedInUser.getSequence());
+    }
+
+    @Transactional(readOnly = true)
+    public void sendUserPriceHistory(Long auctionSeq, Long userSeq) {
+        Auction auction = auctionRepository.findBySequenceAndIsUseIsTrueAndStatus(auctionSeq, AuctionStatus.RUNNING).orElseThrow(() -> new AuctionApiException(AuctionErrorCode.SEQ_NOT_FOUND_OR_NOT_RUNNING));
+        User loggedInUser = userCommonService.getLoggedInUser();
+
+        if(!userSeq.equals(loggedInUser.getSequence())) {
+            throw new AuctionApiException(NOT_MATCH_SUBSCRIBE_USER);
+        }
+
+        String redisPriceHistoryKey = String.format("auction:%d:price:user:%d:history", auction.getSequence(), loggedInUser.getSequence());
+        String redisHistoryChannel = String.format("/sub/auction/%d/price/user/%d/history", auction.getSequence(), loggedInUser.getSequence());
 
         Set<ZSetOperations.TypedTuple<Object>> tuples = redisTemplate.opsForZSet().reverseRangeWithScores(redisPriceHistoryKey, 0, -1);
         List<AuctionPriceUserHistoryDto.PriceHistory> list = tuples.stream().map((tuple) -> {
@@ -247,6 +261,7 @@ public class AuctionService {
 
         redisTemplate.convertAndSend(redisHistoryChannel, AuctionPriceUserHistoryDto.create(historyMessage));
     }
+
 
     @Transactional
     public void finishAuction(Long auctionSeq, AuctionStatus auctionStatus) {
