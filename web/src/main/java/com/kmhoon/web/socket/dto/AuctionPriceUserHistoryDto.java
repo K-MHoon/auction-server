@@ -20,8 +20,6 @@ public final class AuctionPriceUserHistoryDto implements RedisMessage {
     @Builder
     public static final class AuctionPriceUserHistoryMessage {
 
-        private Long auctionSeq;
-        private Long userSeq;
         private List<PriceHistory> priceHistoryList;
     }
 
