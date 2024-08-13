@@ -27,6 +27,7 @@ import java.util.regex.Pattern;
 public class SocketChannelInterceptor implements ChannelInterceptor {
 
     private static final Pattern PARTICIPANT = Pattern.compile("/sub/auction/(\\d+)/participant");
+    private static final Pattern HISTORY = Pattern.compile("/sub/auction/(\\d+)/price/user/([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\\.[a-zA-Z]{2,})/history");
 
     private final JwtTokenProvider jwtTokenProvider;
     private final AuctionService auctionService;
@@ -54,9 +55,14 @@ public class SocketChannelInterceptor implements ChannelInterceptor {
             SecurityContextHolder.getContext().setAuthentication((UsernamePasswordAuthenticationToken)user);
 
             Matcher matcher = PARTICIPANT.matcher(destination);
+            Matcher historyMatcher = HISTORY.matcher(destination);
             if(matcher.matches()) {
                 Long auctionSeq = Long.valueOf(matcher.group(1));
                 auctionService.participate(auctionSeq);
+            } else if (historyMatcher.matches()) {
+                Long auctionSeq = Long.valueOf(historyMatcher.group(1));
+                String userEmail = historyMatcher.group(2);
+                auctionService.sendUserPriceHistory(auctionSeq, userEmail);
             }
         } else if(accessor.getCommand() == StompCommand.DISCONNECT) {
             Set<String> destinationSet = (HashSet<String>) accessor.getSessionAttributes().get("destination");
