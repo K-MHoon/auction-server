@@ -45,7 +45,7 @@ public class Inventory extends BaseTimeEntity {
     private Long itemLimit;
 
     public void updateMoney(long money) {
-        if(this.money > 0) {
+        if(money > 0) {
             throw new IllegalArgumentException("잔액은 0보다 작을 수 없습니다.");
         }
         this.money = money;

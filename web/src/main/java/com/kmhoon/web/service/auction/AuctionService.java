@@ -211,7 +211,6 @@ public class AuctionService {
 
         redisTemplate.opsForZSet().add(redisKey, loggedInUser.getSequence(), price);
 
-
         String redisPriceHistoryKey = String.format("auction:%d:price:user:%d:history", auction.getSequence(), loggedInUser.getSequence());
 
         redisTemplate.opsForZSet().add(redisPriceHistoryKey,price,System.currentTimeMillis());
@@ -276,7 +275,7 @@ public class AuctionService {
 
             if (highScoreTuple != null) {
                 // 1. 낙찰자 검증
-                Optional<User> buyerOps = userRepository.findByEmailWithInventory(highScoreTuple.getValue().toString());
+                Optional<User> buyerOps = userRepository.findBySequence(Long.valueOf(highScoreTuple.getValue().toString()));
 
                 if(buyerOps.isPresent()) {
                     User buyer = buyerOps.get();
@@ -286,7 +285,7 @@ public class AuctionService {
                         auction.updatePrice(highScoreTuple.getScore().longValue());
                         auction.updateSoldTime(LocalDateTime.now());
                         auction.updateBuyer(buyer);
-                        buyerInventory.updateMoney(buyerInventory.getMoney() - auction.getPrice());
+                        buyerInventory.minusMoney(auction.getPrice());
                         auction.getItem().updateInventory(buyer.getInventory());
                     }
                 }
