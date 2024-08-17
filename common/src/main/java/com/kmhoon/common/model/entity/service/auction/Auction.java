@@ -129,6 +129,6 @@ public class Auction extends BaseEntity {
     }
 
     public void updateSoldTime(LocalDateTime endTime) {
-        this.soldTime = soldTime;
+        this.soldTime = endTime;
     }
 }
