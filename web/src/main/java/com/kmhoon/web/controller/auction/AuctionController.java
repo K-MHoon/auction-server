@@ -83,12 +83,6 @@ public class AuctionController {
         auctionService.updatePrice(auctionSeq, request.getPrice());
     }
 
-    @GetMapping("/api/service/auction/{seq}/price")
-    @ResponseStatus(HttpStatus.OK)
-    public long getCurrentPrice(@PathVariable("seq") Long auctionSeq) {
-        return auctionService.getCurrentPrice(auctionSeq);
-    }
-
     @PostMapping("/api/service/auction/{seq}/finish")
     @ResponseStatus(HttpStatus.OK)
     public void finishAuction(@PathVariable("seq") Long auctionSeq,

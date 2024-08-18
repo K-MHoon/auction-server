@@ -91,6 +91,7 @@ public class AuctionService {
                 .isUse(Boolean.TRUE)
                 .description(request.getDescription())
                 .minPrice(request.getMinPrice())
+                .price(request.getMinPrice())
                 .seller(loggedInUser)
                 .startTime(request.getStartTime())
                 .endTime(request.getEndTime())
@@ -176,16 +177,6 @@ public class AuctionService {
         return redisTemplate.opsForZSet().zCard(redisKey);
     }
 
-    @Transactional(readOnly = true)
-    public long getCurrentPrice(Long auctionSeq) {
-        Auction auction = auctionRepository.findBySequenceAndIsUseIsTrueAndStatus(auctionSeq, AuctionStatus.RUNNING).orElseThrow(() -> new AuctionApiException(AuctionErrorCode.SEQ_NOT_FOUND_OR_NOT_RUNNING));
-
-        String redisKey = String.format("auction:%d:price", auction.getSequence());
-
-        ZSetOperations.TypedTuple<Object> highScoreTuple = getHighScoreTuple(redisKey);
-        return highScoreTuple == null ? auction.getMinPrice() : highScoreTuple.getScore().longValue();
-    }
-
     @Transactional
     public void updatePrice(Long auctionSeq, Long price) {
         Auction auction = auctionRepository.findBySequenceAndIsUseIsTrueAndStatus(auctionSeq, AuctionStatus.RUNNING).orElseThrow(() -> new AuctionApiException(AuctionErrorCode.SEQ_NOT_FOUND_OR_NOT_RUNNING));
@@ -197,6 +188,7 @@ public class AuctionService {
 
         String redisKey = String.format("auction:%d:price", auction.getSequence());
         String redisChannel = String.format("/sub/auction/%d/price", auction.getSequence());
+        String sliderChannel = "/sub/auction/slider/price";
 
         ZSetOperations.TypedTuple<Object> highScoreTuple = getHighScoreTuple(redisKey);
 
@@ -222,7 +214,10 @@ public class AuctionService {
                 .build();
 
         redisTemplate.convertAndSend(redisChannel, AuctionPriceDto.create(message));
+        redisTemplate.convertAndSend(sliderChannel, AuctionPriceDto.create(message));
         sendUserPriceHistory(auction.getSequence(), loggedInUser.getEmail());
+
+        auction.updatePrice(price);
     }
 
     @Transactional(readOnly = true)
